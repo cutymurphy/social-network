@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# env
+.env
+.env.local
+
+# build
+dist/
+build/
+
+# logs
+*.log
+
+# локальные файлы
+uploads/
+
+# OS
+.DS_Store
