@@ -1,0 +1,78 @@
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import {
+  Notification,
+  NotificationDocument,
+} from './schemas/notification.schema';
+
+@Injectable()
+export class NotificationsService {
+  constructor(
+    @InjectModel(Notification.name)
+    private notificationModel: Model<NotificationDocument>,
+  ) {}
+
+  async create(
+    type: 'like' | 'comment' | 'follow',
+    userId: string,
+    fromUserId: string,
+    postId?: string,
+  ) {
+    try {
+      return await this.notificationModel.create({
+        type,
+        userId: new Types.ObjectId(userId),
+        fromUserId: new Types.ObjectId(fromUserId),
+        postId: postId ? new Types.ObjectId(postId) : undefined,
+      });
+    } catch {
+      throw new InternalServerErrorException('Failed to create notification');
+    }
+  }
+
+  async getUserNotifications(userId: string, skip = 0, limit = 20) {
+    try {
+      return await this.notificationModel
+        .find({
+          userId: new Types.ObjectId(userId),
+        })
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limit)
+        .populate('fromUserId', 'nickname avatarUrl');
+    } catch {
+      throw new InternalServerErrorException('Failed to load notifications');
+    }
+  }
+
+  async markAsRead(id: string) {
+    try {
+      return await this.notificationModel.updateOne(
+        {
+          _id: new Types.ObjectId(id),
+        },
+        {
+          $set: {
+            read: true,
+          },
+        },
+      );
+    } catch {
+      throw new InternalServerErrorException('Failed to update notification');
+    }
+  }
+
+  async countUnread(userId: string) {
+    try {
+      return await this.notificationModel.countDocuments({
+        userId: new Types.ObjectId(userId),
+        read: false,
+      });
+    } catch {
+      throw new InternalServerErrorException('Failed to count notifications');
+    }
+  }
+}
