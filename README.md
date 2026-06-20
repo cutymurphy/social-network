@@ -24,7 +24,9 @@ A full-stack social network application for sharing media content (images/videos
 - Mongoose
 
 ### DevOps
-- Docker (MongoDB container)
+- Docker
+- MongoDB
+- MinIO
 
 ---
 
@@ -61,3 +63,17 @@ cd frontend
 npm install
 npm run dev
 ```
+
+---
+
+## 📝 Commit Rules
+
+| Type | Description |
+|--------|-------------|
+| feat | New feature |
+| fix | Bug fix |
+| refactor | Code refactoring without changing functionality |
+| chore | Maintenance tasks, configuration, dependencies |
+| docs | Documentation changes |
+| style | Code style changes (formatting, linting, etc.) |
+| test | Adding or updating tests |
