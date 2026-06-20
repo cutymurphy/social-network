@@ -116,6 +116,23 @@ export class AuthService {
     }
   }
 
+  async getMe(userId: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      userId: user._id,
+      email: user.email,
+      nickname: user.nickname,
+      avatarUrl: user.avatarUrl,
+      bio: user.bio,
+      isPrivate: user.isPrivate,
+    };
+  }
+
   async logout(res: Response) {
     res.clearCookie('refreshToken');
     return { success: true };
