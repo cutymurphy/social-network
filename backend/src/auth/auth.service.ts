@@ -52,14 +52,44 @@ export class AuthService {
     return this.generateTokens(user._id.toString(), user.email);
   }
 
-  private generateTokens(userId: string, email: string) {
+  private async generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
 
-    return {
-      accessToken: this.jwtService.sign(payload),
-      refreshToken: this.jwtService.sign(payload, {
-        expiresIn: '7d',
-      }),
-    };
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '120m',
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '7d',
+    });
+
+    await this.userModel.updateOne({ _id: userId }, { refreshToken });
+
+    return { accessToken, refreshToken };
+  }
+
+  async refresh(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+
+      const user = await this.userModel.findById(payload.sub);
+
+      if (!user || user.refreshToken !== token) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      return this.generateTokens(user._id.toString(), user.email);
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  async logout(userId: string) {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $unset: { refreshToken: 1 } },
+    );
+
+    return { success: true };
   }
 }
