@@ -14,9 +14,6 @@ export class User {
   @Prop({ required: true })
   passwordHash!: string;
 
-  @Prop({ default: null })
-  refreshToken?: string;
-
   @Prop({ default: '' })
   bio!: string;
 
