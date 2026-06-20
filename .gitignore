@@ -12,8 +12,5 @@ build/
 # logs
 *.log
 
-# локальные файлы
-uploads/
-
 # OS
 .DS_Store
