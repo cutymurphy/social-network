@@ -1,5 +1,3 @@
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -19,17 +17,15 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
     }),
     DatabaseModule,
-    UsersModule,
     AuthModule,
-    PostsModule,
-    MediaModule,
+    CommentsModule,
     FeedModule,
     FollowsModule,
     LikesModule,
-    CommentsModule,
+    MediaModule,
     NotificationsModule,
+    PostsModule,
+    UsersModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

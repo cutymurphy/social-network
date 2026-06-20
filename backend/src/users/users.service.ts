@@ -13,8 +13,4 @@ export class UsersService {
   async findAll() {
     return this.userModel.find();
   }
-
-  async create(data: any) {
-    return this.userModel.create(data);
-  }
 }

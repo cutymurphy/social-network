@@ -2,30 +2,27 @@ import {
   Controller,
   Post,
   Delete,
-  Body,
   Req,
   UseGuards,
-  Get,
   Param,
 } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { LikeDto } from './dto/like.dto';
 
 @Controller('likes')
 export class LikesController {
   constructor(private likesService: LikesService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post()
-  like(@Req() req: any, @Body() dto: LikeDto) {
-    return this.likesService.likePost(req.user.userId, dto.postId);
+  @Post(':id')
+  like(@Req() req: any, @Param('id') postId: string) {
+    return this.likesService.likePost(req.user.userId, postId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete()
-  unlike(@Req() req: any, @Body() dto: LikeDto) {
-    return this.likesService.unlikePost(req.user.userId, dto.postId);
+  @Delete(':id')
+  unlike(@Req() req: any, @Param('id') postId: string) {
+    return this.likesService.unlikePost(req.user.userId, postId);
   }
 
   //   @Get(':postId/count')

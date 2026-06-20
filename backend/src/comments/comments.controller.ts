@@ -16,6 +16,11 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 export class CommentsController {
   constructor(private commentsService: CommentsService) {}
 
+  @Get(':postId')
+  getByPost(@Param('postId') postId: string) {
+    return this.commentsService.getCommentsByPost(postId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreateCommentDto) {
@@ -24,11 +29,6 @@ export class CommentsController {
       dto.postId,
       dto.text,
     );
-  }
-
-  @Get(':postId')
-  getByPost(@Param('postId') postId: string) {
-    return this.commentsService.getCommentsByPost(postId);
   }
 
   @UseGuards(JwtAuthGuard)
