@@ -1,0 +1,81 @@
+import { Injectable, ConflictException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Follow } from './schemas/follow.schema';
+import { User } from '../users/schemas/user.schema';
+import { NotificationsService } from '../notifications/notifications.service';
+
+@Injectable()
+export class FollowsService {
+  constructor(
+    @InjectModel(Follow.name)
+    private followModel: Model<Follow>,
+
+    @InjectModel(User.name)
+    private userModel: Model<User>,
+
+    private notificationsService: NotificationsService,
+  ) {}
+
+  async followUser(followerId: string, followingId: string) {
+    if (followerId === followingId) {
+      throw new ConflictException('You cannot follow yourself');
+    }
+
+    try {
+      await this.followModel.create({
+        followerId: new Types.ObjectId(followerId),
+        followingId: new Types.ObjectId(followingId),
+      });
+
+      await this.userModel.updateOne(
+        { _id: followingId },
+        { $inc: { followersCount: 1 } },
+      );
+
+      await this.userModel.updateOne(
+        { _id: followerId },
+        { $inc: { followingCount: 1 } },
+      );
+
+      await this.notificationsService.create('follow', followingId, followerId);
+
+      return { success: true };
+    } catch (e) {
+      throw new ConflictException('Already following this user');
+    }
+  }
+
+  async unfollowUser(followerId: string, followingId: string) {
+    const deleted = await this.followModel.deleteOne({
+      followerId: new Types.ObjectId(followerId),
+      followingId: new Types.ObjectId(followingId),
+    });
+
+    if (deleted.deletedCount > 0) {
+      await this.userModel.updateOne(
+        { _id: followingId },
+        { $inc: { followersCount: -1 } },
+      );
+
+      await this.userModel.updateOne(
+        { _id: followerId },
+        { $inc: { followingCount: -1 } },
+      );
+    }
+
+    return { success: true };
+  }
+
+  async getFollowing(userId: string) {
+    return this.followModel.find({
+      followerId: new Types.ObjectId(userId),
+    });
+  }
+
+  async getFollowers(userId: string) {
+    return this.followModel.find({
+      followingId: new Types.ObjectId(userId),
+    });
+  }
+}
