@@ -12,8 +12,4 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isPrivate?: boolean;
-
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
 }

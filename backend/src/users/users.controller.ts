@@ -8,10 +8,14 @@ import {
   Delete,
   Body,
   UseGuards,
+  UseInterceptors,
+  Post,
+  UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
@@ -31,6 +35,13 @@ export class UsersController {
   @Get(':id')
   getUser(@Param('id') id: string) {
     return this.usersService.findById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('me/avatar')
+  uploadAvatar(@Req() req: any, @UploadedFile() file: any) {
+    return this.usersService.updateAvatar(req.user.userId, file);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -68,15 +68,31 @@ export class UsersService {
     return this.userModel.findById(userId).select('-passwordHash -__v');
   }
 
+  async updateAvatar(userId: string, file: any) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const newUrl = await this.mediaService.uploadFile(file);
+
+    if (user.avatarUrl) {
+      await this.mediaService.deleteFile(user.avatarUrl);
+    }
+
+    user.avatarUrl = newUrl;
+    await user.save();
+
+    return { avatarUrl: newUrl };
+  }
+
   async updateMe(userId: string, dto: UpdateUserDto) {
     const updateData: any = {};
 
     if (dto.nickname !== undefined) updateData.nickname = dto.nickname;
     if (dto.bio !== undefined) updateData.bio = dto.bio;
     if (dto.isPrivate !== undefined) updateData.isPrivate = dto.isPrivate;
-    if (dto.avatarUrl !== undefined) updateData.avatarUrl = dto.avatarUrl;
 
-    if (dto.nickname) {
+    if (dto.nickname !== undefined) {
       const exists = await this.userModel.findOne({
         nickname: dto.nickname,
         _id: { $ne: userId },
