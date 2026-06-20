@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'minio';
 import { v4 as uuid } from 'uuid';
+import { DeleteMediaDto } from './dto/media.dto';
 
 @Injectable()
 export class MediaService {
@@ -32,5 +33,19 @@ export class MediaService {
     });
 
     return `http://localhost:9000/${bucket}/${fileName}`;
+  }
+
+  async deleteFile(dto: DeleteMediaDto): Promise<void> {
+    const bucket = 'posts';
+
+    const fileName = dto.fileUrl.split('/').slice(-1)[0];
+
+    if (!fileName) return;
+
+    try {
+      await this.minioClient.removeObject(bucket, fileName);
+    } catch (err) {
+      console.error('Failed to delete file from MinIO:', err);
+    }
   }
 }

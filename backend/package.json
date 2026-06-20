@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "recalc:counters": "ts-node scripts/recalculate-post-counters.ts",
     "recalc:users": "ts-node scripts/recalculate-user-followers.ts",
-    "recalc:notifications": "ts-node scripts/recalculate-notifications.ts"
+    "recalc:notifications": "ts-node scripts/recalculate-notifications.ts",
+    "cleanup:orphans": "ts-node scripts/cleanup-orphans.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
