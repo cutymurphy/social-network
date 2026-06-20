@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'minio';
 import { v4 as uuid } from 'uuid';
-import { DeleteMediaDto } from './dto/media.dto';
 
 @Injectable()
 export class MediaService {
@@ -19,6 +22,10 @@ export class MediaService {
   }
 
   async uploadFile(file: any): Promise<string> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     const bucket = 'posts';
 
     const fileName = `${uuid()}-${file.originalname}`;
@@ -32,20 +39,20 @@ export class MediaService {
       'Content-Type': file.mimetype,
     });
 
-    return `http://localhost:9000/${bucket}/${fileName}`;
+    return `${this.config.get('MINIO_PUBLIC_URL')}/${bucket}/${fileName}`;
   }
 
-  async deleteFile(dto: DeleteMediaDto): Promise<void> {
+  async deleteFile(fileUrl: string): Promise<void> {
     const bucket = 'posts';
 
-    const fileName = dto.fileUrl.split('/').slice(-1)[0];
+    const fileName = fileUrl.split('/').slice(-1)[0];
 
     if (!fileName) return;
 
     try {
       await this.minioClient.removeObject(bucket, fileName);
-    } catch (err) {
-      console.error('Failed to delete file from MinIO:', err);
+    } catch {
+      throw new InternalServerErrorException('Failed to delete file');
     }
   }
 }

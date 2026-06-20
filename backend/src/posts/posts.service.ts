@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -32,17 +34,13 @@ export class PostsService {
     private mediaService: MediaService,
   ) {}
 
-  async createPost(authorId: string, dto: CreatePostDto, file?: any) {
+  async createPost(authorId: string, dto: CreatePostDto, file: any) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     try {
-      let mediaUrl = '';
-
-      if (file) {
-        mediaUrl = await this.mediaService.uploadFile(file);
-      }
-
-      if (!authorId) {
-        throw new HttpException('Author not found', HttpStatus.BAD_REQUEST);
-      }
+      const mediaUrl = await this.mediaService.uploadFile(file);
 
       return await this.postModel.create({
         authorId: new Types.ObjectId(authorId),
@@ -51,10 +49,7 @@ export class PostsService {
         caption: dto.caption,
       });
     } catch (error: any) {
-      throw new HttpException(
-        error.message || 'Failed to create post',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to create post');
     }
   }
 
@@ -83,12 +78,10 @@ export class PostsService {
       });
 
       if (post.mediaUrl) {
-        await this.mediaService.deleteFile({ fileUrl: post.mediaUrl });
+        await this.mediaService.deleteFile(post.mediaUrl);
       }
 
-      await this.postModel.deleteOne({
-        _id: post._id,
-      });
+      await post.deleteOne();
 
       return { success: true };
     } catch (error: any) {
@@ -107,6 +100,8 @@ export class PostsService {
   }
 
   async getFeed(skip = 0, limit = 10) {
+    limit = Math.min(limit, 50);
+
     return this.postModel
       .find()
       .sort({ createdAt: -1 })

@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Follow } from './schemas/follow.schema';
@@ -20,6 +24,12 @@ export class FollowsService {
   async followUser(followerId: string, followingId: string) {
     if (followerId === followingId) {
       throw new ConflictException('You cannot follow yourself');
+    }
+
+    const targetUser = await this.userModel.findById(followingId);
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
     }
 
     try {
@@ -47,22 +57,24 @@ export class FollowsService {
   }
 
   async unfollowUser(followerId: string, followingId: string) {
-    const deleted = await this.followModel.deleteOne({
+    const result = await this.followModel.deleteOne({
       followerId: new Types.ObjectId(followerId),
       followingId: new Types.ObjectId(followingId),
     });
 
-    if (deleted.deletedCount > 0) {
-      await this.userModel.updateOne(
-        { _id: followingId },
-        { $inc: { followersCount: -1 } },
-      );
-
-      await this.userModel.updateOne(
-        { _id: followerId },
-        { $inc: { followingCount: -1 } },
-      );
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('Follow relation does not exist');
     }
+
+    await this.userModel.updateOne(
+      { _id: followingId },
+      { $inc: { followersCount: -1 } },
+    );
+
+    await this.userModel.updateOne(
+      { _id: followerId },
+      { $inc: { followingCount: -1 } },
+    );
 
     return { success: true };
   }

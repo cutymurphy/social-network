@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -23,8 +24,8 @@ export class CommentsService {
 
   async createComment(userId: string, postId: string, text: string) {
     try {
-      if (!text) {
-        throw new NotFoundException('Comment text is required');
+      if (!text?.trim()) {
+        throw new BadRequestException('Comment text is required');
       }
 
       const comment = await this.commentModel.create({
@@ -55,7 +56,7 @@ export class CommentsService {
 
       return comment;
     } catch (e) {
-      throw new InternalServerErrorException('Failed to create comment');
+      throw e;
     }
   }
 
@@ -83,6 +84,7 @@ export class CommentsService {
 
       await this.commentModel.deleteOne({
         _id: comment._id,
+        userId,
       });
 
       await this.postModel.updateOne(
@@ -92,7 +94,7 @@ export class CommentsService {
 
       return { success: true };
     } catch (e) {
-      throw new InternalServerErrorException('Failed to delete comment');
+      throw e;
     }
   }
 }

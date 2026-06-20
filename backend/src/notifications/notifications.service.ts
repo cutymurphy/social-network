@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -32,6 +36,7 @@ export class NotificationsService {
   }
 
   async getUserNotifications(userId: string, skip = 0, limit = 20) {
+    limit = Math.min(limit, 50);
     try {
       return await this.notificationModel
         .find({
@@ -48,11 +53,12 @@ export class NotificationsService {
     }
   }
 
-  async markAsRead(id: string) {
+  async markAsRead(id: string, userId: string) {
     try {
-      return await this.notificationModel.updateOne(
+      const result = await this.notificationModel.updateOne(
         {
           _id: new Types.ObjectId(id),
+          userId: new Types.ObjectId(userId),
         },
         {
           $set: {
@@ -60,7 +66,17 @@ export class NotificationsService {
           },
         },
       );
-    } catch {
+
+      if (result.matchedCount === 0) {
+        throw new NotFoundException('Notification not found');
+      }
+
+      return { success: true };
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        throw e;
+      }
+
       throw new InternalServerErrorException('Failed to update notification');
     }
   }

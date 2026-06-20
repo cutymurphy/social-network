@@ -26,6 +26,6 @@ export class MediaController {
   @UseGuards(JwtAuthGuard)
   @Delete()
   delete(@Body() dto: DeleteMediaDto) {
-    return this.mediaService.deleteFile(dto);
+    return this.mediaService.deleteFile(dto.fileUrl);
   }
 }
