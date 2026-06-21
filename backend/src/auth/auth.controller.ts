@@ -24,8 +24,16 @@ export class AuthController {
   }
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto.email, dto.nickname, dto.password);
+  register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.register(
+      dto.email,
+      dto.nickname,
+      dto.password,
+      res,
+    );
   }
 
   @Post('login')

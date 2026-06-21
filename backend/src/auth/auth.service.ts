@@ -19,7 +19,12 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(email: string, nickname: string, password: string) {
+  async register(
+    email: string,
+    nickname: string,
+    password: string,
+    res: Response,
+  ) {
     const exists = await this.userModel.findOne({
       $or: [{ email }, { nickname }],
     });
@@ -36,7 +41,19 @@ export class AuthService {
       passwordHash,
     });
 
-    return this.generateTokens(user._id.toString(), user.email);
+    const { accessToken, refreshToken } = await this.generateTokens(
+      user._id.toString(),
+      user.email,
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken };
   }
 
   async login(email: string, password: string, res: Response) {
