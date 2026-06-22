@@ -14,6 +14,8 @@ import { Follow } from '../follows/schemas/follow.schema';
 import { Notification } from '../notifications/schemas/notification.schema';
 import { MediaService } from 'src/media/media.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FollowRequest } from 'src/follow-requests/schemas/follow-request.schema';
+import { FollowRequestsService } from 'src/follow-requests/follow-requests.service';
 
 @Injectable()
 export class UsersService {
@@ -36,7 +38,12 @@ export class UsersService {
     @InjectModel(Notification.name)
     private notificationModel: Model<Notification>,
 
+    @InjectModel(FollowRequest.name)
+    private followRequestModel: Model<FollowRequest>,
+
     private mediaService: MediaService,
+
+    private followRequestsService: FollowRequestsService,
   ) {}
 
   async findById(id: string) {
@@ -96,6 +103,15 @@ export class UsersService {
     if (dto.bio !== undefined) updateData.bio = dto.bio;
     if (dto.isPrivate !== undefined) updateData.isPrivate = dto.isPrivate;
 
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    const wasPrivate = user.isPrivate;
+    const willBePublic = dto.isPrivate === false && wasPrivate === true;
+
+    if (willBePublic) {
+      await this.followRequestsService.approveAllForTarget(userId);
+    }
+
     if (dto.nickname !== undefined) {
       const exists = await this.userModel.findOne({
         nickname: dto.nickname,
@@ -145,6 +161,10 @@ export class UsersService {
 
     await this.followModel.deleteMany({
       $or: [{ followerId: id }, { followingId: id }],
+    });
+
+    await this.followRequestModel.deleteMany({
+      $or: [{ requesterId: id }, { targetId: id }],
     });
 
     await this.notificationModel.deleteMany({

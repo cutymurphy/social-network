@@ -4,15 +4,22 @@ import { FollowsService } from './follows.service';
 import { FollowsController } from './follows.controller';
 import { Follow, FollowSchema } from './schemas/follow.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { SocialModule } from 'src/social/social.module';
+import { FollowRequestsModule } from 'src/follow-requests/follow-requests.module';
+import {
+  Notification,
+  NotificationSchema,
+} from 'src/notifications/schemas/notification.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Follow.name, schema: FollowSchema },
       { name: User.name, schema: UserSchema },
+      { name: Notification.name, schema: NotificationSchema },
     ]),
-    NotificationsModule,
+    SocialModule,
+    FollowRequestsModule,
   ],
   controllers: [FollowsController],
   providers: [FollowsService],

@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { Comment } from './schemas/comment.schema';
 import { Post } from '../posts/schemas/post.schema';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ENotificationTypes } from 'src/notifications/schemas/notification.schema';
 
 @Injectable()
 export class CommentsService {
@@ -27,12 +28,6 @@ export class CommentsService {
       throw new BadRequestException('Comment text is required');
     }
 
-    const post = await this.postModel.findById(postId);
-
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
-
     const comment = await this.commentModel.create({
       userId: new Types.ObjectId(userId),
       postId: new Types.ObjectId(postId),
@@ -44,9 +39,15 @@ export class CommentsService {
       { $inc: { commentsCount: 1 } },
     );
 
-    if (post.authorId.toString() !== userId) {
+    const post = await this.postModel.findById(postId);
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post && post.authorId.toString() !== userId) {
       await this.notificationsService.create(
-        'comment',
+        ENotificationTypes.comment,
         post.authorId.toString(),
         userId,
         postId,

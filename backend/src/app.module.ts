@@ -10,6 +10,8 @@ import { FollowsModule } from './follows/follows.module';
 import { LikesModule } from './likes/likes.module';
 import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FollowRequestsModule } from './follow-requests/follow-requests.module';
+import { SocialModule } from './social/social.module';
 
 @Module({
   imports: [
@@ -21,10 +23,12 @@ import { NotificationsModule } from './notifications/notifications.module';
     CommentsModule,
     FeedModule,
     FollowsModule,
+    FollowRequestsModule,
     LikesModule,
     MediaModule,
     NotificationsModule,
     PostsModule,
+    SocialModule,
     UsersModule,
   ],
 })

@@ -7,7 +7,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Follow } from './schemas/follow.schema';
 import { User } from '../users/schemas/user.schema';
-import { NotificationsService } from '../notifications/notifications.service';
+import { FollowRequestsService } from 'src/follow-requests/follow-requests.service';
+import { SocialActionsService } from 'src/social/social.service';
+import { ENotificationTypes, Notification } from 'src/notifications/schemas/notification.schema';
 
 @Injectable()
 export class FollowsService {
@@ -18,7 +20,11 @@ export class FollowsService {
     @InjectModel(User.name)
     private userModel: Model<User>,
 
-    private notificationsService: NotificationsService,
+    @InjectModel(Notification.name)
+    private notificationModel: Model<Notification>,
+
+    private socialActions: SocialActionsService,
+    private followRequestsService: FollowRequestsService,
   ) {}
 
   async followUser(followerId: string, followingId: string) {
@@ -26,37 +32,34 @@ export class FollowsService {
       throw new ConflictException('You cannot follow yourself');
     }
 
+    const followerObjectId = new Types.ObjectId(followerId);
+    const followingObjectId = new Types.ObjectId(followingId);
+
     const targetUser = await this.userModel.findById(followingId);
 
     if (!targetUser) {
       throw new NotFoundException('User not found');
     }
 
-    try {
-      await this.followModel.create({
-        followerId: new Types.ObjectId(followerId),
-        followingId: new Types.ObjectId(followingId),
-      });
+    const alreadyFollowed = await this.followModel.findOne({
+      followerId: followerObjectId,
+      followingId: followingObjectId,
+    });
 
-      await this.userModel.updateOne(
-        { _id: followingId },
-        { $inc: { followersCount: 1 } },
-      );
-
-      await this.userModel.updateOne(
-        { _id: followerId },
-        { $inc: { followingCount: 1 } },
-      );
-
-      await this.notificationsService.create('follow', followingId, followerId);
-
-      return { success: true };
-    } catch (e: any) {
-      if (e.code === 11000) {
-        throw new ConflictException('Already following this user');
-      }
-      throw e;
+    if (alreadyFollowed) {
+      throw new ConflictException('Already following this user');
     }
+
+    if (targetUser.isPrivate) {
+      await this.followRequestsService.create(followerId, followingId);
+
+      return {
+        success: true,
+        pending: true,
+      };
+    }
+
+    return await this.socialActions.follow(followerId, followingId);
   }
 
   async unfollowUser(followerId: string, followingId: string) {
@@ -72,6 +75,12 @@ export class FollowsService {
     if (result.deletedCount === 0) {
       throw new NotFoundException('Follow relation does not exist');
     }
+
+    await this.notificationModel.deleteMany({
+      type: ENotificationTypes.follow,
+      fromUserId: new Types.ObjectId(followerId),
+      userId: new Types.ObjectId(followingId),
+    });
 
     await this.userModel.updateOne(
       { _id: followingId },

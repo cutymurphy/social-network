@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  ENotificationTypes,
   Notification,
   NotificationDocument,
 } from './schemas/notification.schema';
@@ -18,7 +19,7 @@ export class NotificationsService {
   ) {}
 
   async create(
-    type: 'like' | 'comment' | 'follow',
+    type: ENotificationTypes,
     userId: string,
     fromUserId: string,
     postId?: string,

@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { Like } from './schemas/like.schema';
 import { Post } from '../posts/schemas/post.schema';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ENotificationTypes } from 'src/notifications/schemas/notification.schema';
 
 @Injectable()
 export class LikesService {
@@ -48,7 +49,7 @@ export class LikesService {
 
     if (post.authorId.toString() !== userId) {
       await this.notificationsService.create(
-        'like',
+        ENotificationTypes.like,
         post.authorId.toString(),
         userId,
         postId,

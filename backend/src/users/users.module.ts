@@ -12,6 +12,11 @@ import {
   NotificationSchema,
 } from 'src/notifications/schemas/notification.schema';
 import { MediaModule } from 'src/media/media.module';
+import {
+  FollowRequest,
+  FollowRequestSchema,
+} from 'src/follow-requests/schemas/follow-request.schema';
+import { FollowRequestsModule } from 'src/follow-requests/follow-requests.module';
 
 @Module({
   imports: [
@@ -25,8 +30,10 @@ import { MediaModule } from 'src/media/media.module';
       { name: Comment.name, schema: CommentSchema },
       { name: Follow.name, schema: FollowSchema },
       { name: Notification.name, schema: NotificationSchema },
+      { name: FollowRequest.name, schema: FollowRequestSchema },
     ]),
     MediaModule,
+    FollowRequestsModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],
