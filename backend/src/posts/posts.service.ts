@@ -39,6 +39,10 @@ export class PostsService {
       throw new BadRequestException('File is required');
     }
 
+    if (!file.mimetype.includes(dto.mediaType)) {
+      throw new BadRequestException('Media type is incorrect');
+    }
+
     try {
       const mediaUrl = await this.mediaService.uploadFile(file);
 

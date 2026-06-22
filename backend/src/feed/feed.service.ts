@@ -21,6 +21,10 @@ export class FeedService {
         .find({ followerId: new Types.ObjectId(userId) })
         .distinct('followingId');
 
+      if (!followingIds.length) {
+        return [];
+      }
+
       return await this.postModel
         .find({
           authorId: { $in: followingIds },

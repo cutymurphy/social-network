@@ -5,16 +5,16 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ unique: true, required: true })
+  @Prop({ required: true })
   email!: string;
 
-  @Prop({ unique: true, required: true })
+  @Prop({ required: true })
   nickname!: string;
 
   @Prop({ required: true })
   passwordHash!: string;
 
-  @Prop({ default: '' })
+  @Prop({ default: '', maxlength: 200 })
   bio!: string;
 
   @Prop({ default: false })
@@ -31,3 +31,6 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ nickname: 1 }, { unique: true });

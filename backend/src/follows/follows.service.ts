@@ -51,12 +51,19 @@ export class FollowsService {
       await this.notificationsService.create('follow', followingId, followerId);
 
       return { success: true };
-    } catch (e) {
-      throw new ConflictException('Already following this user');
+    } catch (e: any) {
+      if (e.code === 11000) {
+        throw new ConflictException('Already following this user');
+      }
+      throw e;
     }
   }
 
   async unfollowUser(followerId: string, followingId: string) {
+    if (followerId === followingId) {
+      throw new ConflictException('You cannot unfollow yourself');
+    }
+
     const result = await this.followModel.deleteOne({
       followerId: new Types.ObjectId(followerId),
       followingId: new Types.ObjectId(followingId),
@@ -80,14 +87,18 @@ export class FollowsService {
   }
 
   async getFollowing(userId: string) {
-    return this.followModel.find({
-      followerId: new Types.ObjectId(userId),
-    });
+    return this.followModel
+      .find({
+        followerId: new Types.ObjectId(userId),
+      })
+      .populate('followingId', 'nickname avatarUrl');
   }
 
   async getFollowers(userId: string) {
-    return this.followModel.find({
-      followingId: new Types.ObjectId(userId),
-    });
+    return this.followModel
+      .find({
+        followingId: new Types.ObjectId(userId),
+      })
+      .populate('followerId', 'nickname avatarUrl');
   }
 }

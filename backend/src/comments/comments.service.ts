@@ -23,41 +23,37 @@ export class CommentsService {
   ) {}
 
   async createComment(userId: string, postId: string, text: string) {
-    try {
-      if (!text?.trim()) {
-        throw new BadRequestException('Comment text is required');
-      }
-
-      const comment = await this.commentModel.create({
-        userId: new Types.ObjectId(userId),
-        postId: new Types.ObjectId(postId),
-        text,
-      });
-
-      await this.postModel.updateOne(
-        { _id: postId },
-        { $inc: { commentsCount: 1 } },
-      );
-
-      const post = await this.postModel.findById(postId);
-
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-
-      if (post && post.authorId.toString() !== userId) {
-        await this.notificationsService.create(
-          'comment',
-          post.authorId.toString(),
-          userId,
-          postId,
-        );
-      }
-
-      return comment;
-    } catch (e) {
-      throw e;
+    if (!text?.trim()) {
+      throw new BadRequestException('Comment text is required');
     }
+
+    const post = await this.postModel.findById(postId);
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const comment = await this.commentModel.create({
+      userId: new Types.ObjectId(userId),
+      postId: new Types.ObjectId(postId),
+      text,
+    });
+
+    await this.postModel.updateOne(
+      { _id: postId },
+      { $inc: { commentsCount: 1 } },
+    );
+
+    if (post.authorId.toString() !== userId) {
+      await this.notificationsService.create(
+        'comment',
+        post.authorId.toString(),
+        userId,
+        postId,
+      );
+    }
+
+    return comment;
   }
 
   async getCommentsByPost(postId: string) {
@@ -72,29 +68,25 @@ export class CommentsService {
   }
 
   async deleteComment(commentId: string, userId: string) {
-    try {
-      const comment = await this.commentModel.findOne({
-        _id: new Types.ObjectId(commentId),
-        userId: new Types.ObjectId(userId),
-      });
+    const comment = await this.commentModel.findOne({
+      _id: new Types.ObjectId(commentId),
+      userId: new Types.ObjectId(userId),
+    });
 
-      if (!comment) {
-        throw new NotFoundException('Comment not found');
-      }
-
-      await this.commentModel.deleteOne({
-        _id: comment._id,
-        userId,
-      });
-
-      await this.postModel.updateOne(
-        { _id: comment.postId },
-        { $inc: { commentsCount: -1 } },
-      );
-
-      return { success: true };
-    } catch (e) {
-      throw e;
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
     }
+
+    await this.commentModel.deleteOne({
+      _id: comment._id,
+      userId,
+    });
+
+    await this.postModel.updateOne(
+      { _id: comment.postId },
+      { $inc: { commentsCount: -1 } },
+    );
+
+    return { success: true };
   }
 }

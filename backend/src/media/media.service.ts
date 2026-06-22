@@ -42,7 +42,7 @@ export class MediaService {
     return `${this.config.get('MINIO_PUBLIC_URL')}/${bucket}/${fileName}`;
   }
 
-  async deleteFile(fileUrl: string): Promise<void> {
+  async deleteFile(fileUrl: string) {
     const bucket = 'posts';
 
     const fileName = fileUrl.split('/').slice(-1)[0];
@@ -51,6 +51,7 @@ export class MediaService {
 
     try {
       await this.minioClient.removeObject(bucket, fileName);
+      return { success: true };
     } catch {
       throw new InternalServerErrorException('Failed to delete file');
     }

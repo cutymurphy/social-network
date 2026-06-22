@@ -73,6 +73,10 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('User not found');
 
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     const newUrl = await this.mediaService.uploadFile(file);
 
     if (user.avatarUrl) {
