@@ -15,10 +15,15 @@ import { MediaService } from '../media/media.service';
 import { Like } from 'src/likes/schemas/like.schema';
 import { Comment } from 'src/comments/schemas/comment.schema';
 import { Notification } from 'src/notifications/schemas/notification.schema';
+import { User } from 'src/users/schemas/user.schema';
+import { Follow } from 'src/follows/schemas/follow.schema';
 
 @Injectable()
 export class PostsService {
   constructor(
+    @InjectModel(User.name)
+    private userModel: Model<User>,
+
     @InjectModel(Post.name)
     private postModel: Model<PostDocument>,
 
@@ -31,8 +36,77 @@ export class PostsService {
     @InjectModel(Notification.name)
     private notificationModel: Model<Notification>,
 
+    @InjectModel(Follow.name)
+    private followModel: Model<Follow>,
+
     private mediaService: MediaService,
   ) {}
+
+  async getUserPosts(
+    targetUserId: string,
+    currentUserId?: string,
+    skip = 0,
+    limit = 12,
+  ) {
+    skip = Math.max(0, skip);
+    limit = Math.min(Math.max(1, limit), 50);
+
+    const user = await this.userModel.findById(targetUserId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isPrivate && currentUserId && currentUserId !== targetUserId) {
+      const follow = await this.followModel.exists({
+        followerId: new Types.ObjectId(currentUserId),
+        followingId: new Types.ObjectId(targetUserId),
+      });
+
+      if (!follow) {
+        throw new ForbiddenException('Profile is private');
+      }
+    }
+
+    return this.postModel
+      .find({
+        authorId: new Types.ObjectId(targetUserId),
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit);
+  }
+
+  async getPostById(currentUserId: string, postId: string) {
+    if (!Types.ObjectId.isValid(postId)) {
+      throw new BadRequestException('Invalid post id');
+    }
+
+    const post = await this.postModel
+      .findById(postId)
+      .populate('authorId', 'nickname avatarUrl bio isPrivate');
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const author = post.authorId as any;
+
+    if (author.isPrivate && author._id.toString() !== currentUserId) {
+      const isFollowing = await this.followModel.exists({
+        followerId: new Types.ObjectId(currentUserId),
+        followingId: author._id,
+      });
+
+      if (!isFollowing) {
+        throw new ForbiddenException('This post is private');
+      }
+    }
+
+    return post;
+  }
 
   async createPost(authorId: string, dto: CreatePostDto, file: any) {
     if (!file) {
@@ -101,16 +175,5 @@ export class PostsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  async getFeed(skip = 0, limit = 10) {
-    limit = Math.min(limit, 50);
-
-    return this.postModel
-      .find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('authorId', 'nickname avatarUrl');
   }
 }

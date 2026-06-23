@@ -20,9 +20,26 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class PostsController {
   constructor(private postsService: PostsService) {}
 
-  @Get()
-  feed(@Query('skip') skip = 0, @Query('limit') limit = 10) {
-    return this.postsService.getFeed(Number(skip), Number(limit));
+  @UseGuards(JwtAuthGuard)
+  @Get('user/:userId')
+  getUserPosts(
+    @Req() req: any,
+    @Param('userId') userId: string,
+    @Query('skip') skip = 0,
+    @Query('limit') limit = 12,
+  ) {
+    return this.postsService.getUserPosts(
+      userId,
+      req.user.userId,
+      Number(skip),
+      Number(limit),
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  getPost(@Req() req: any, @Param('id') postId: string) {
+    return this.postsService.getPostById(req.user.userId, postId);
   }
 
   @UseGuards(JwtAuthGuard)

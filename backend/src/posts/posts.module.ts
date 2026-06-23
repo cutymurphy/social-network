@@ -10,6 +10,8 @@ import {
   Notification,
   NotificationSchema,
 } from '../notifications/schemas/notification.schema';
+import { User, UserSchema } from 'src/users/schemas/user.schema';
+import { Follow, FollowSchema } from 'src/follows/schemas/follow.schema';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import {
       { name: Like.name, schema: LikeSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: Notification.name, schema: NotificationSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Follow.name, schema: FollowSchema },
     ]),
     MediaModule,
   ],
