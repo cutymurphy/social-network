@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 
 import {
+  ENotificationTypes,
   Notification,
   NotificationSchema,
 } from '../src/notifications/schemas/notification.schema';
@@ -50,7 +51,7 @@ async function run() {
     }
 
     await NotificationModel.create({
-      type: 'like',
+      type: ENotificationTypes.like,
       userId: post.authorId,
       fromUserId: like.userId,
       postId: like.postId,
@@ -74,7 +75,7 @@ async function run() {
     }
 
     await NotificationModel.create({
-      type: 'comment',
+      type: ENotificationTypes.comment,
       userId: post.authorId,
       fromUserId: comment.userId,
       postId: comment.postId,
@@ -88,7 +89,7 @@ async function run() {
 
   for (const follow of follows) {
     await NotificationModel.create({
-      type: 'follow',
+      type: ENotificationTypes.follow,
       userId: follow.followingId,
       fromUserId: follow.followerId,
       read: false,

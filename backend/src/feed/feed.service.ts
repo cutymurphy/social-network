@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Post } from '../posts/schemas/post.schema';
@@ -16,25 +16,32 @@ export class FeedService {
 
   async getFeed(userId: string, skip = 0, limit = 10) {
     limit = Math.min(limit, 50);
+
     try {
       const followingIds = await this.followModel
-        .find({ followerId: new Types.ObjectId(userId) })
+        .find({
+          followerId: new Types.ObjectId(userId),
+        })
         .distinct('followingId');
 
-      if (!followingIds.length) {
+      if (followingIds.length === 0) {
         return [];
       }
 
       return await this.postModel
         .find({
-          authorId: { $in: followingIds },
+          authorId: {
+            $in: followingIds,
+          },
         })
-        .sort({ createdAt: -1 })
+        .sort({
+          createdAt: -1,
+        })
         .skip(skip)
         .limit(limit)
-        .populate('authorId', 'nickname bio');
-    } catch (e) {
-      throw e;
+        .populate('authorId', 'nickname avatarUrl');
+    } catch {
+      throw new InternalServerErrorException('Failed to load feed');
     }
   }
 }

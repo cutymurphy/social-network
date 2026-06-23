@@ -25,3 +25,8 @@ export class Post {
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+PostSchema.index({
+  authorId: 1,
+  createdAt: -1,
+});
