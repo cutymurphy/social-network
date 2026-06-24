@@ -33,8 +33,7 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      // TODO: исправить на 15
-      expiresIn: '30m',
+      expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
@@ -176,16 +175,20 @@ export class AuthService {
     };
   }
 
-  async logout(userId: string, res: Response) {
-    if (userId) {
-      await this.userModel.updateOne(
-        { _id: userId },
-        {
-          $set: {
-            refreshTokenHash: null,
-          },
-        },
-      );
+  async logout(req: any, res: Response) {
+    const token = req.cookies?.refreshToken;
+    if (token) {
+      try {
+        const payload = this.jwtService.verify(token, {
+          secret: this.configService.get('JWT_REFRESH_SECRET'),
+        });
+        if (payload?.sub) {
+          await this.userModel.updateOne(
+            { _id: payload.sub },
+            { $set: { refreshTokenHash: null } },
+          );
+        }
+      } catch {}
     }
 
     res.clearCookie('refreshToken');

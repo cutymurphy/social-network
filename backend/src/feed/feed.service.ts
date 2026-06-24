@@ -29,7 +29,7 @@ export class FeedService {
         .distinct('followingId');
 
       if (followingIds.length === 0) {
-        return [];
+        return { posts: [], hasMore: false };
       }
 
       const posts = await this.postModel

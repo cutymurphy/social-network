@@ -82,10 +82,6 @@ export class PostsService {
     const hasMore = posts.length > limit;
     if (hasMore) posts.pop();
 
-    if (!currentUserId) {
-      return posts;
-    }
-
     const postIds = posts.map((p) => p._id);
 
     const likes = await this.likeModel.find({
@@ -111,7 +107,7 @@ export class PostsService {
 
     const post = await this.postModel
       .findById(postId)
-      .populate('authorId', 'nickname avatarUrl');
+      .populate('authorId', 'nickname avatarUrl isPrivate');
 
     if (!post) {
       throw new NotFoundException('Post not found');

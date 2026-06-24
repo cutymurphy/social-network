@@ -43,8 +43,9 @@ export class AuthController {
     return this.authService.refresh(req, res);
   }
 
+  @Public()
   @Post('logout')
   logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
-    return this.authService.logout(req.user?.userId, res);
+    return this.authService.logout(req, res);
   }
 }
