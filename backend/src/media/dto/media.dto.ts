@@ -6,3 +6,11 @@ export class DeleteMediaDto {
   @IsString()
   fileUrl!: string;
 }
+
+export const AVATAR_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export const POST_FILE_TYPES = [
+  ...AVATAR_FILE_TYPES,
+  'video/mp4',
+  'video/quicktime',
+];

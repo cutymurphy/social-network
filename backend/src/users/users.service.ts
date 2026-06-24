@@ -64,10 +64,16 @@ export class UsersService {
     return user;
   }
 
+  private escapeRegex(text: string) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   async search(query: string, skip = 0, limit = 20) {
+    const safeQuery = this.escapeRegex(query);
+
     const users = await this.userModel
       .find({
-        nickname: { $regex: query, $options: 'i' },
+        nickname: { $regex: safeQuery, $options: 'i' },
       })
       .skip(skip)
       .limit(limit + 1)

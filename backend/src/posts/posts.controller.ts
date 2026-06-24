@@ -14,6 +14,8 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiQuery } from '@nestjs/swagger';
+import { createFileFilter } from 'src/media/media.helper';
+import { POST_FILE_TYPES } from 'src/media/dto/media.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -42,7 +44,12 @@ export class PostsController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 500 * 1024 * 1024 },
+      fileFilter: createFileFilter(POST_FILE_TYPES),
+    }),
+  )
   create(
     @Req() req: any,
     @Body() dto: CreatePostDto,

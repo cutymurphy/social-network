@@ -16,6 +16,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiQuery } from '@nestjs/swagger';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { createFileFilter } from 'src/media/media.helper';
+import { AVATAR_FILE_TYPES } from 'src/media/dto/media.dto';
 
 @Controller('users')
 export class UsersController {
@@ -42,7 +44,12 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: createFileFilter(AVATAR_FILE_TYPES),
+    }),
+  )
   @Post('me/avatar')
   uploadAvatar(@Req() req: any, @UploadedFile() file: any) {
     return this.usersService.updateAvatar(req.user.userId, file);
