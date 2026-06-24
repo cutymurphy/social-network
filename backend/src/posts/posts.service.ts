@@ -57,7 +57,7 @@ export class PostsService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.isPrivate && currentUserId && currentUserId !== targetUserId) {
+    if (user.isPrivate && currentUserId !== targetUserId) {
       const follow = await this.followModel.exists({
         followerId: new Types.ObjectId(currentUserId),
         followingId: new Types.ObjectId(targetUserId),
@@ -68,7 +68,7 @@ export class PostsService {
       }
     }
 
-    return this.postModel
+    const posts = await this.postModel
       .find({
         authorId: new Types.ObjectId(targetUserId),
       })
@@ -76,7 +76,26 @@ export class PostsService {
         createdAt: -1,
       })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('authorId', 'nickname avatarUrl');
+
+    if (!currentUserId) {
+      return posts;
+    }
+
+    const postIds = posts.map((p) => p._id);
+
+    const likes = await this.likeModel.find({
+      userId: new Types.ObjectId(currentUserId),
+      postId: { $in: postIds },
+    });
+
+    const likedPostIds = new Set(likes.map((like) => like.postId.toString()));
+
+    return posts.map((post) => ({
+      ...post.toObject(),
+      isLiked: likedPostIds.has(post._id.toString()),
+    }));
   }
 
   async getPostById(currentUserId: string, postId: string) {
@@ -86,7 +105,7 @@ export class PostsService {
 
     const post = await this.postModel
       .findById(postId)
-      .populate('authorId', 'nickname avatarUrl bio isPrivate');
+      .populate('authorId', 'nickname avatarUrl');
 
     if (!post) {
       throw new NotFoundException('Post not found');
@@ -105,7 +124,15 @@ export class PostsService {
       }
     }
 
-    return post;
+    const isLiked = await this.likeModel.exists({
+      userId: new Types.ObjectId(currentUserId),
+      postId: post._id,
+    });
+
+    return {
+      ...post.toObject(),
+      isLiked: !!isLiked,
+    };
   }
 
   async createPost(authorId: string, dto: CreatePostDto, file: any) {
