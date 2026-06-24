@@ -19,6 +19,32 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
+  private async saveRefreshToken(userId: string, refreshToken: string) {
+    const hash = await bcrypt.hash(refreshToken, 10);
+
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { refreshTokenHash: hash } },
+    );
+  }
+
+  private async generateTokens(userId: string, email: string) {
+    const payload = { sub: userId, email };
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      // TODO: исправить на 15
+      expiresIn: '30m',
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken };
+  }
+
   async register(
     email: string,
     nickname: string,
@@ -45,6 +71,8 @@ export class AuthService {
       user._id.toString(),
       user.email,
     );
+
+    await this.saveRefreshToken(user._id.toString(), refreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -74,6 +102,8 @@ export class AuthService {
       user.email,
     );
 
+    await this.saveRefreshToken(user._id.toString(), refreshToken);
+
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,
@@ -82,23 +112,6 @@ export class AuthService {
     });
 
     return { accessToken };
-  }
-
-  private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-      // TODO: исправить на 15
-      expiresIn: '120m',
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: '7d',
-    });
-
-    return { accessToken, refreshToken };
   }
 
   async refresh(req: any, res: Response) {
@@ -113,13 +126,25 @@ export class AuthService {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
 
+      if (!payload?.sub) {
+        throw new UnauthorizedException();
+      }
+
       const user = await this.userModel.findById(payload.sub);
 
-      if (!user) {
+      if (!user || !user.refreshTokenHash) {
+        throw new UnauthorizedException();
+      }
+
+      const isValid = await bcrypt.compare(token, user.refreshTokenHash);
+
+      if (!isValid) {
         throw new UnauthorizedException();
       }
 
       const tokens = await this.generateTokens(user._id.toString(), user.email);
+
+      await this.saveRefreshToken(user._id.toString(), tokens.refreshToken);
 
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
@@ -151,7 +176,18 @@ export class AuthService {
     };
   }
 
-  async logout(res: Response) {
+  async logout(userId: string, res: Response) {
+    if (userId) {
+      await this.userModel.updateOne(
+        { _id: userId },
+        {
+          $set: {
+            refreshTokenHash: null,
+          },
+        },
+      );
+    }
+
     res.clearCookie('refreshToken');
     return { success: true };
   }

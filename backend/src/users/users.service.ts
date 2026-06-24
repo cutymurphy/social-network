@@ -89,7 +89,9 @@ export class UsersService {
   }
 
   async getMe(userId: string) {
-    return this.userModel.findById(userId).select('-passwordHash -__v');
+    return this.userModel
+      .findById(userId)
+      .select('-passwordHash -refreshTokenHash -__v');
   }
 
   async updateAvatar(userId: string, file: any) {
@@ -142,7 +144,7 @@ export class UsersService {
 
     return this.userModel
       .findByIdAndUpdate(userId, { $set: updateData }, { new: true })
-      .select('-passwordHash -createdAt -updatedAt -__v');
+      .select('-passwordHash -refreshTokenHash -createdAt -updatedAt -__v');
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

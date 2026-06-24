@@ -11,9 +11,6 @@ export class User {
   @Prop({ required: true })
   nickname!: string;
 
-  @Prop({ required: true })
-  passwordHash!: string;
-
   @Prop({ default: '', maxlength: 200 })
   bio!: string;
 
@@ -28,6 +25,12 @@ export class User {
 
   @Prop({ default: '' })
   avatarUrl!: string;
+
+  @Prop({ required: true })
+  passwordHash!: string;
+
+  @Prop()
+  refreshTokenHash?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
