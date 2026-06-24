@@ -4,7 +4,6 @@ import {
   Get,
   Body,
   Req,
-  UseGuards,
   Query,
   UseInterceptors,
   UploadedFile,
@@ -13,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiQuery } from '@nestjs/swagger';
 
@@ -21,7 +19,6 @@ import { ApiQuery } from '@nestjs/swagger';
 export class PostsController {
   constructor(private postsService: PostsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
   @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
@@ -39,13 +36,11 @@ export class PostsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   getPost(@Req() req: any, @Param('id') postId: string) {
     return this.postsService.getPostById(req.user.userId, postId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   create(
@@ -56,7 +51,6 @@ export class PostsController {
     return this.postsService.createPost(req.user.userId, dto, file);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   deletePost(@Req() req: any, @Param('id') postId: string) {
     return this.postsService.deletePost(req.user.userId, postId);

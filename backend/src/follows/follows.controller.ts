@@ -5,11 +5,9 @@ import {
   Get,
   Param,
   Req,
-  UseGuards,
   Query,
 } from '@nestjs/common';
 import { FollowsService } from './follows.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('follows')
@@ -38,13 +36,11 @@ export class FollowsController {
     return this.followsService.getFollowers(id, Number(skip), Number(limit));
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post(':id')
   follow(@Req() req: any, @Param('id') followingId: string) {
     return this.followsService.followUser(req.user.userId, followingId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   unfollow(@Req() req: any, @Param('id') followingId: string) {
     return this.followsService.unfollowUser(req.user.userId, followingId);

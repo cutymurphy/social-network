@@ -1,18 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Req,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Controller, Get, Post, Param, Req, Query } from '@nestjs/common';
 import { FollowRequestsService } from './follow-requests.service';
 import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('follow-requests')
-@UseGuards(JwtAuthGuard)
 export class FollowRequestsController {
   constructor(private readonly followRequestsService: FollowRequestsService) {}
 

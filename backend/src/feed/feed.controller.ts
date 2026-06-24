@@ -1,13 +1,11 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import { FeedService } from './feed.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('feed')
 export class FeedController {
   constructor(private feedService: FeedService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 15 })

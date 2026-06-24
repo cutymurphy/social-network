@@ -12,6 +12,8 @@ import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FollowRequestsModule } from './follow-requests/follow-requests.module';
 import { SocialModule } from './social/social.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -30,6 +32,12 @@ import { SocialModule } from './social/social.module';
     PostsModule,
     SocialModule,
     UsersModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}

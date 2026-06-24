@@ -3,14 +3,12 @@ import {
   Post,
   Body,
   Req,
-  UseGuards,
   Get,
   Param,
   Delete,
   Query,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ApiQuery } from '@nestjs/swagger';
 
@@ -33,7 +31,6 @@ export class CommentsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() dto: CreateCommentDto) {
     return this.commentsService.createComment(
@@ -43,7 +40,6 @@ export class CommentsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   delete(@Req() req: any, @Param('id') id: string) {
     return this.commentsService.deleteComment(id, req.user.userId);
