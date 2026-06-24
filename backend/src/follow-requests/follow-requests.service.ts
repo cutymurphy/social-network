@@ -52,22 +52,44 @@ export class FollowRequestsService {
     }
   }
 
-  async getIncomingRequests(userId: string) {
-    return this.followRequestModel
+  async getIncomingRequests(userId: string, skip = 0, limit = 20) {
+    limit = Math.min(Math.max(limit, 1), 50);
+    const incomingRequests = await this.followRequestModel
       .find({
         targetId: new Types.ObjectId(userId),
       })
-      .populate('requesterId', 'nickname avatarUrl')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit + 1)
+      .populate('requesterId', 'nickname avatarUrl');
+
+    const hasMore = incomingRequests.length > limit;
+    if (hasMore) incomingRequests.pop();
+
+    return {
+      incomingRequests,
+      hasMore,
+    };
   }
 
-  async getOutgoingRequests(userId: string) {
-    return this.followRequestModel
+  async getOutgoingRequests(userId: string, skip = 0, limit = 20) {
+    limit = Math.min(Math.max(limit, 1), 50);
+    const outgoingRequests = await this.followRequestModel
       .find({
         requesterId: new Types.ObjectId(userId),
       })
-      .populate('targetId', 'nickname avatarUrl')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit + 1)
+      .populate('targetId', 'nickname avatarUrl');
+
+    const hasMore = outgoingRequests.length > limit;
+    if (hasMore) outgoingRequests.pop();
+
+    return {
+      outgoingRequests,
+      hasMore,
+    };
   }
 
   async accept(requestId: string, currentUserId: string) {

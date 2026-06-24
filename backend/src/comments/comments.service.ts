@@ -57,12 +57,24 @@ export class CommentsService {
     return comment;
   }
 
-  async getCommentsByPost(postId: string) {
+  async getCommentsByPost(postId: string, skip = 0, limit = 20) {
+    limit = Math.min(Math.max(limit, 1), 50);
+
     try {
-      return await this.commentModel
+      const comments = await this.commentModel
         .find({ postId: new Types.ObjectId(postId) })
         .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit + 1)
         .populate('userId', 'nickname avatarUrl');
+
+      const hasMore = comments.length > limit;
+      if (hasMore) comments.pop();
+
+      return {
+        comments,
+        hasMore,
+      };
     } catch {
       throw new InternalServerErrorException('Failed to load comments');
     }

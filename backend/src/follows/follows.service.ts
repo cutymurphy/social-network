@@ -9,7 +9,10 @@ import { Follow } from './schemas/follow.schema';
 import { User } from '../users/schemas/user.schema';
 import { FollowRequestsService } from 'src/follow-requests/follow-requests.service';
 import { SocialActionsService } from 'src/social/social.service';
-import { ENotificationTypes, Notification } from 'src/notifications/schemas/notification.schema';
+import {
+  ENotificationTypes,
+  Notification,
+} from 'src/notifications/schemas/notification.schema';
 
 @Injectable()
 export class FollowsService {
@@ -95,19 +98,43 @@ export class FollowsService {
     return { success: true };
   }
 
-  async getFollowing(userId: string) {
-    return this.followModel
+  async getFollowing(userId: string, skip = 0, limit = 20) {
+    limit = Math.min(Math.max(limit, 1), 50);
+    const followings = await this.followModel
       .find({
         followerId: new Types.ObjectId(userId),
       })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit + 1)
       .populate('followingId', 'nickname avatarUrl');
+
+    const hasMore = followings.length > limit;
+    if (hasMore) followings.pop();
+
+    return {
+      followings,
+      hasMore,
+    };
   }
 
-  async getFollowers(userId: string) {
-    return this.followModel
+  async getFollowers(userId: string, skip = 0, limit = 20) {
+    limit = Math.min(Math.max(limit, 1), 50);
+    const followers = await this.followModel
       .find({
         followingId: new Types.ObjectId(userId),
       })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit + 1)
       .populate('followerId', 'nickname avatarUrl');
+
+    const hasMore = followers.length > limit;
+    if (hasMore) followers.pop();
+
+    return {
+      followers,
+      hasMore,
+    };
   }
 }

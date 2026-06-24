@@ -7,18 +7,30 @@ import {
   Get,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private commentsService: CommentsService) {}
 
   @Get(':postId')
-  getByPost(@Param('postId') postId: string) {
-    return this.commentsService.getCommentsByPost(postId);
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  getComments(
+    @Param('postId') postId: string,
+    @Query('skip') skip = 0,
+    @Query('limit') limit = 20,
+  ) {
+    return this.commentsService.getCommentsByPost(
+      postId,
+      Number(skip),
+      Number(limit),
+    );
   }
 
   @UseGuards(JwtAuthGuard)

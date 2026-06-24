@@ -15,6 +15,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('posts')
 export class PostsController {
@@ -22,11 +23,13 @@ export class PostsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   getUserPosts(
     @Req() req: any,
     @Param('userId') userId: string,
     @Query('skip') skip = 0,
-    @Query('limit') limit = 12,
+    @Query('limit') limit = 20,
   ) {
     return this.postsService.getUserPosts(
       userId,

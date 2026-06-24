@@ -16,14 +16,21 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('search')
-  search(@Query('q') q: string) {
-    return this.usersService.search(q);
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  search(
+    @Query('q') q: string,
+    @Query('skip') skip = 0,
+    @Query('limit') limit = 20,
+  ) {
+    return this.usersService.search(q, Number(skip), Number(limit));
   }
 
   @UseGuards(JwtAuthGuard)

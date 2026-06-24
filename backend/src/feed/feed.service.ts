@@ -18,8 +18,8 @@ export class FeedService {
     private likeModel: Model<Like>,
   ) {}
 
-  async getFeed(userId: string, skip = 0, limit = 10) {
-    limit = Math.min(limit, 50);
+  async getFeed(userId: string, skip = 0, limit = 15) {
+    limit = Math.min(Math.max(limit, 1), 50);
 
     try {
       const followingIds = await this.followModel
@@ -42,8 +42,11 @@ export class FeedService {
           createdAt: -1,
         })
         .skip(skip)
-        .limit(limit)
+        .limit(limit + 1)
         .populate('authorId', 'nickname avatarUrl');
+
+      const hasMore = posts.length > limit;
+      if (hasMore) posts.pop();
 
       const postIds = posts.map((p) => p._id);
 
@@ -54,10 +57,13 @@ export class FeedService {
 
       const likedPostIds = new Set(likes.map((like) => like.postId.toString()));
 
-      return posts.map((post) => ({
-        ...post.toObject(),
-        isLiked: likedPostIds.has(post._id.toString()),
-      }));
+      return {
+        posts: posts.map((post) => ({
+          ...post.toObject(),
+          isLiked: likedPostIds.has(post._id.toString()),
+        })),
+        hasMore,
+      };
     } catch {
       throw new InternalServerErrorException('Failed to load feed');
     }

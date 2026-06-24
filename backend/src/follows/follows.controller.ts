@@ -6,22 +6,36 @@ import {
   Param,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { FollowsService } from './follows.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('follows')
 export class FollowsController {
   constructor(private followsService: FollowsService) {}
 
   @Get('following/:id')
-  getFollowing(@Param('id') id: string) {
-    return this.followsService.getFollowing(id);
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  getFollowing(
+    @Param('id') id: string,
+    @Query('skip') skip = 0,
+    @Query('limit') limit = 20,
+  ) {
+    return this.followsService.getFollowing(id, Number(skip), Number(limit));
   }
 
   @Get('followers/:id')
-  getFollowers(@Param('id') id: string) {
-    return this.followsService.getFollowers(id);
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  getFollowers(
+    @Param('id') id: string,
+    @Query('skip') skip = 0,
+    @Query('limit') limit = 20,
+  ) {
+    return this.followsService.getFollowers(id, Number(skip), Number(limit));
   }
 
   @UseGuards(JwtAuthGuard)

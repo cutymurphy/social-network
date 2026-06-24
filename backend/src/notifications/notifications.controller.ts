@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -16,6 +17,8 @@ export class NotificationsController {
   constructor(private notificationsService: NotificationsService) {}
 
   @Get()
+  @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   getMy(@Req() req: any, @Query('skip') skip = 0, @Query('limit') limit = 20) {
     return this.notificationsService.getUserNotifications(
       req.user.userId,

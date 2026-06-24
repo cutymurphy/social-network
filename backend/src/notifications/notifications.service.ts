@@ -37,9 +37,9 @@ export class NotificationsService {
   }
 
   async getUserNotifications(userId: string, skip = 0, limit = 20) {
-    limit = Math.min(limit, 50);
+    limit = Math.min(Math.max(limit, 1), 50);
     try {
-      return await this.notificationModel
+      const notifications = await this.notificationModel
         .find({
           userId: new Types.ObjectId(userId),
         })
@@ -47,8 +47,16 @@ export class NotificationsService {
           createdAt: -1,
         })
         .skip(skip)
-        .limit(limit)
+        .limit(limit + 1)
         .populate('fromUserId', 'nickname avatarUrl');
+
+      const hasMore = notifications.length > limit;
+      if (hasMore) notifications.pop();
+
+      return {
+        notifications,
+        hasMore,
+      };
     } catch {
       throw new InternalServerErrorException('Failed to load notifications');
     }

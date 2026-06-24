@@ -62,13 +62,22 @@ export class UsersService {
     return user;
   }
 
-  async search(query: string) {
-    return this.userModel
+  async search(query: string, skip = 0, limit = 20) {
+    const users = await this.userModel
       .find({
         nickname: { $regex: query, $options: 'i' },
       })
-      .limit(20)
+      .skip(skip)
+      .limit(limit + 1)
       .select('nickname avatarUrl bio');
+
+    const hasMore = users.length > limit;
+    if (hasMore) users.pop();
+
+    return {
+      users,
+      hasMore,
+    };
   }
 
   async getMe(userId: string) {

@@ -46,7 +46,7 @@ export class PostsService {
     targetUserId: string,
     currentUserId?: string,
     skip = 0,
-    limit = 12,
+    limit = 20,
   ) {
     skip = Math.max(0, skip);
     limit = Math.min(Math.max(1, limit), 50);
@@ -76,8 +76,11 @@ export class PostsService {
         createdAt: -1,
       })
       .skip(skip)
-      .limit(limit)
+      .limit(limit + 1)
       .populate('authorId', 'nickname avatarUrl');
+
+    const hasMore = posts.length > limit;
+    if (hasMore) posts.pop();
 
     if (!currentUserId) {
       return posts;
@@ -92,10 +95,13 @@ export class PostsService {
 
     const likedPostIds = new Set(likes.map((like) => like.postId.toString()));
 
-    return posts.map((post) => ({
-      ...post.toObject(),
-      isLiked: likedPostIds.has(post._id.toString()),
-    }));
+    return {
+      posts: posts.map((post) => ({
+        ...post.toObject(),
+        isLiked: likedPostIds.has(post._id.toString()),
+      })),
+      hasMore,
+    };
   }
 
   async getPostById(currentUserId: string, postId: string) {
