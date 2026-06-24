@@ -16,6 +16,8 @@ import { MediaService } from 'src/media/media.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FollowRequest } from 'src/follow-requests/schemas/follow-request.schema';
 import { FollowRequestsService } from 'src/follow-requests/follow-requests.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -135,6 +137,31 @@ export class UsersService {
     return this.userModel
       .findByIdAndUpdate(userId, { $set: updateData }, { new: true })
       .select('-passwordHash -createdAt -updatedAt -__v');
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!dto.oldPassword?.trim() || !dto.newPassword?.trim()) {
+      throw new BadRequestException('Password can not be empty');
+    }
+
+    const isMatch = await bcrypt.compare(dto.oldPassword, user.passwordHash);
+
+    if (!isMatch) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    const newHash = await bcrypt.hash(dto.newPassword, 10);
+
+    user.passwordHash = newHash;
+    await user.save();
+
+    return { success: true };
   }
 
   async deleteMe(userId: string) {
