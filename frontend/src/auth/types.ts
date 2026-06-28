@@ -1,15 +1,12 @@
 import type { ReactNode } from "react";
 import type { IAuthUser } from "../types/user";
+import type { ILoginRequest, IRegisterRequest } from "../types/auth";
 
 export interface IAuthContextValue {
   user: IAuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    nickname: string,
-    password: string,
-  ) => Promise<void>;
+  login: (data: ILoginRequest) => Promise<void>;
+  register: (data: IRegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   reloadUser: () => Promise<void>;
 }

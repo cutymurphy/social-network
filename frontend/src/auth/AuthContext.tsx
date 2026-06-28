@@ -10,6 +10,7 @@ import { setAccessToken, setOnUnauthorized } from "../api/client";
 import * as authApi from "../api/auth";
 import type { IAuthUser } from "../types/user";
 import type { IAuthContextValue, IAuthProviderProps } from "./types";
+import type { ILoginRequest, IRegisterRequest } from "../types/auth";
 
 const AuthContext = createContext<IAuthContextValue | null>(null);
 
@@ -22,26 +23,19 @@ export const AuthProvider: FC<IAuthProviderProps> = ({ children }) => {
     setUser(me);
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { accessToken } = await authApi.login({ email, password });
+  const login = useCallback(async (data: ILoginRequest) => {
+    const { accessToken } = await authApi.login(data);
     setAccessToken(accessToken);
     const me = await authApi.getMe();
     setUser(me);
   }, []);
 
-  const register = useCallback(
-    async (email: string, nickname: string, password: string) => {
-      const { accessToken } = await authApi.register({
-        email,
-        nickname,
-        password,
-      });
-      setAccessToken(accessToken);
-      const me = await authApi.getMe();
-      setUser(me);
-    },
-    [],
-  );
+  const register = useCallback(async (data: IRegisterRequest) => {
+    const { accessToken } = await authApi.register(data);
+    setAccessToken(accessToken);
+    const me = await authApi.getMe();
+    setUser(me);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
