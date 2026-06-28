@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
+import { Navbar } from './components/layout';
+import { AppRouter } from './router';
 
-function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    fetch("http://localhost:3000")
-      .then((res) => res.text())
-      .then(setMessage);
-  }, []);
-
-  return <div>Backend says: {message}</div>;
-}
+export const App = () => {
+  return (
+    <>
+      <Navbar />
+      <AppRouter />
+    </>
+  );
+};
 
 export default App;
