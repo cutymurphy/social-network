@@ -61,7 +61,14 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    return user;
+    const postsCount = await this.postModel.countDocuments({
+      authorId: user._id,
+    });
+
+    return {
+      ...user.toObject(),
+      postsCount,
+    };
   }
 
   private escapeRegex(text: string) {

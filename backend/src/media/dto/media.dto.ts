@@ -13,4 +13,5 @@ export const POST_FILE_TYPES = [
   ...AVATAR_FILE_TYPES,
   'video/mp4',
   'video/quicktime',
+  'video/matroska',
 ];

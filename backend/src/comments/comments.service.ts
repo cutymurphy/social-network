@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -81,19 +82,26 @@ export class CommentsService {
   }
 
   async deleteComment(commentId: string, userId: string) {
-    const comment = await this.commentModel.findOne({
-      _id: new Types.ObjectId(commentId),
-      userId: new Types.ObjectId(userId),
-    });
+    const comment = await this.commentModel.findById(commentId);
 
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
 
-    await this.commentModel.deleteOne({
-      _id: comment._id,
-      userId,
-    });
+    const post = await this.postModel.findById(comment.postId);
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const isCommentAuthor = comment.userId.toString() === userId;
+    const isPostAuthor = post.authorId.toString() === userId;
+
+    if (!isCommentAuthor && !isPostAuthor) {
+      throw new ForbiddenException('You cannot delete this comment');
+    }
+
+    await comment.deleteOne();
 
     await this.postModel.updateOne(
       { _id: comment.postId },
