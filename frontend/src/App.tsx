@@ -1,11 +1,11 @@
 import { Toaster } from "sonner";
-import { Navbar } from "./components/layout";
 import { AppRouter } from "./router";
+import { Sidebar } from "./components/molecules/Sidebar";
 
 export const App = () => {
   return (
     <>
-      <Navbar />
+      <Sidebar />
       <AppRouter />
       <Toaster position="top-right" richColors />
     </>
