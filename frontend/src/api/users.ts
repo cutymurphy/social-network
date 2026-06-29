@@ -1,15 +1,15 @@
-import { apiFetch, jsonBody } from './client';
+import { apiFetch, jsonBody } from "./client";
 import type {
   IMeUser,
   IPublicUser,
   IUpdateUserRequest,
   IChangePasswordRequest,
-} from '../types/user';
+} from "../types/user";
 import type {
   ISearchResponse,
   ISuccessResponse,
   IAvatarResponse,
-} from '../types/api';
+} from "../types/api";
 
 export const searchUsers = (q: string, skip = 0, limit = 20) => {
   const params = new URLSearchParams({
@@ -21,7 +21,7 @@ export const searchUsers = (q: string, skip = 0, limit = 20) => {
 };
 
 export const getMe = () => {
-  return apiFetch<IMeUser>('/users/me');
+  return apiFetch<IMeUser>("/users/me");
 };
 
 export const getUser = (id: string) => {
@@ -29,28 +29,32 @@ export const getUser = (id: string) => {
 };
 
 export const updateMe = (data: IUpdateUserRequest) => {
-  return apiFetch<IMeUser>('/users/me', {
-    method: 'PATCH',
+  return apiFetch<IMeUser>("/users/me", {
+    method: "PATCH",
     ...jsonBody(data),
   });
 };
 
 export const changePassword = (data: IChangePasswordRequest) => {
-  return apiFetch<ISuccessResponse>('/users/me/password', {
-    method: 'PATCH',
+  return apiFetch<ISuccessResponse>("/users/me/password", {
+    method: "PATCH",
     ...jsonBody(data),
   });
 };
 
 export const uploadAvatar = (file: File) => {
   const form = new FormData();
-  form.append('file', file);
-  return apiFetch<IAvatarResponse>('/users/me/avatar', {
-    method: 'POST',
+  form.append("file", file);
+  return apiFetch<IAvatarResponse>("/users/me/avatar", {
+    method: "POST",
     body: form,
   });
 };
 
+export const deleteAvatar = () => {
+  return apiFetch<ISuccessResponse>("/users/me/avatar", { method: "DELETE" });
+};
+
 export const deleteMe = () => {
-  return apiFetch<ISuccessResponse>('/users/me', { method: 'DELETE' });
+  return apiFetch<ISuccessResponse>("/users/me", { method: "DELETE" });
 };

@@ -65,6 +65,11 @@ export class UsersController {
     return this.usersService.changePassword(req.user.userId, dto);
   }
 
+  @Delete('me/avatar')
+  deleteAvatar(@Req() req: any) {
+    return this.usersService.deleteAvatar(req.user.userId);
+  }
+
   @Delete('me')
   delete(@Req() req: any) {
     return this.usersService.deleteMe(req.user.userId);

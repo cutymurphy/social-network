@@ -179,6 +179,25 @@ export class UsersService {
     return { success: true };
   }
 
+  async deleteAvatar(userId: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.avatarUrl) {
+      throw new BadRequestException('Avatar already empty');
+    }
+
+    await this.mediaService.deleteFile(user.avatarUrl);
+
+    user.avatarUrl = '';
+    await user.save();
+
+    return { success: true };
+  }
+
   async deleteMe(userId: string) {
     const id = new Types.ObjectId(userId);
 
