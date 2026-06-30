@@ -7,7 +7,7 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import MoveToInboxRoundedIcon from "@mui/icons-material/MoveToInboxRounded";
-import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import { Avatar } from "@mui/material";
 import clsx from "clsx";
 
@@ -50,7 +50,11 @@ export const Sidebar = () => {
         <Avatar
           alt="my avatar"
           src={user.avatarUrl}
-          sx={{ width: "32px", height: "32px" }}
+          sx={{
+            width: "32px",
+            height: "32px",
+            border: "2px solid var(--purple)",
+          }}
         />
       ),
     },

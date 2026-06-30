@@ -1,20 +1,26 @@
 :root {
-  --dark: #151521;
+  --dark: #11111a;
   --dark-light: #212328;
   --purple: #5d4de3;
   --blue: #34bbf2;
   --grey: #5b5d6a;
   --white: #ececec;
+  --red: #c23730;
 
   --bg: var(--dark);
   --text: var(--white);
   --modal-bg: var(--dark-light);
   --modal-overlay: rgba(0, 0, 0, 0.65);
+  --error: var(--red);
 }
 
 #modals-root {
   position: relative;
   z-index: 9999;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 html,

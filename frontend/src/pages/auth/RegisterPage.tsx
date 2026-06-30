@@ -1,16 +1,10 @@
 import { useState, type SyntheticEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { ERoutes } from "../../router";
 import { toastError } from "../../lib/toast";
 import styles from "./AuthPage.module.scss";
-import {
-  Button,
-  CircularProgress,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Button, CircularProgress, TextField, Typography } from "@mui/material";
 import { PasswordField } from "../../components/atoms/PasswordField";
 import { initialRegister, type IRegisterRequest } from "../../types/auth";
 import { validateField } from "../../utils/validation";
@@ -114,9 +108,12 @@ export const RegisterPage = () => {
           )}
         </Button>
       </form>
-      <Typography>
-        Уже есть аккаунт? <Link href={ERoutes.login}>Войти</Link>
-      </Typography>
+      <div className={styles.support}>
+        <div>Уже есть аккаунт?</div>
+        <Link to={ERoutes.login} style={{ color: "var(--purple)" }}>
+          Войти
+        </Link>
+      </div>
     </main>
   );
 };

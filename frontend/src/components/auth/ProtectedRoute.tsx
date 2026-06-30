@@ -1,12 +1,13 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { ERoutes } from '../../router/routes';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import { ERoutes } from "../../router/routes";
+import { SupportContent } from "../atoms/SupportContent";
 
 export const ProtectedRoute = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ padding: 16 }}>Загрузка...</div>;
+    return <SupportContent isLoading={true} />;
   }
 
   if (!user) {

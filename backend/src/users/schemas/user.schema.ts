@@ -8,10 +8,10 @@ export class User {
   @Prop({ required: true })
   email!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, maxlength: 30, minlength: 3 })
   nickname!: string;
 
-  @Prop({ default: '', maxlength: 200 })
+  @Prop({ default: '', maxlength: 150 })
   bio!: string;
 
   @Prop({ default: false })

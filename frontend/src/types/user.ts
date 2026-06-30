@@ -34,6 +34,7 @@ export interface IPublicUser {
   bio: string;
   followersCount: number;
   followingCount: number;
+  postsCount: number;
   isPrivate: boolean;
 }
 

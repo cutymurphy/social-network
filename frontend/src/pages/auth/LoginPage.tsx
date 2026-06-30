@@ -1,16 +1,10 @@
 import { useState, type SyntheticEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { ERoutes } from "../../router";
 import { toastError } from "../../lib/toast";
 import styles from "./AuthPage.module.scss";
-import {
-  Button,
-  CircularProgress,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Button, CircularProgress, TextField, Typography } from "@mui/material";
 import { PasswordField } from "../../components/atoms/PasswordField";
 import { initialLogin, type ILoginRequest } from "../../types/auth";
 import { validateField } from "../../utils/validation";
@@ -96,9 +90,12 @@ export const LoginPage = () => {
           )}
         </Button>
       </form>
-      <Typography>
-        Нет аккаунта? <Link href={ERoutes.register}>Регистрация</Link>
-      </Typography>
+      <div className={styles.support}>
+        <div>Нет аккаунта?</div>
+        <Link to={ERoutes.register} style={{ color: "var(--purple)" }}>
+          Регистрация
+        </Link>
+      </div>
     </main>
   );
 };
