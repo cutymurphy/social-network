@@ -1,0 +1,69 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 45%;
+}
+
+.profileInfo {
+  display: flex;
+  gap: 28px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.nicknameWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nickname {
+  font-weight: 600 !important;
+  word-break: break-word;
+}
+
+.settingsIcon {
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1) rotate(15deg);
+  }
+}
+
+.bio {
+  word-break: break-word;
+}
+
+.numberInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.followText {
+  cursor: pointer;
+}
+
+.postsWrapper {
+  width: 80%;
+}
+
+.privateMessage {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--grey);
+}

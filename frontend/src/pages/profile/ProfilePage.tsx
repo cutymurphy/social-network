@@ -1,0 +1,249 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  ERoutes,
+  profileFollowersPath,
+  profileFollowingPath,
+} from "../../router";
+import * as usersApi from "../../api/users";
+import * as postsApi from "../../api/posts";
+import * as socialApi from "../../api/social";
+import * as followsApi from "../../api/follows";
+import * as frApi from "../../api/followRequests";
+import { ApiError } from "../../api/client";
+import { useAuth } from "../../auth/AuthContext";
+import type { IPost } from "../../types/post";
+import type { IPublicUser } from "../../types/user";
+import type { ISocialStatus } from "../../types/social";
+import { PostList } from "../../components/organisms/PostList";
+import { toastError } from "../../lib/toast";
+import styles from "./ProfilePage.module.scss";
+import { Avatar, Typography } from "@mui/material";
+import {
+  getFollowersLabel,
+  getFollowingLabel,
+  getPostsLabel,
+} from "../../utils/getWordForm";
+import { UploadAvatar } from "../../components/atoms/UploadAvatar";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import { SupportContent } from "../../components/atoms/SupportContent";
+import { delay } from "../../utils/delay";
+
+const LIMIT = 12;
+const AVATAR_SIZE = "150px";
+
+export const ProfilePage = () => {
+  const { id = "" } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isOwn = user?.userId === id;
+
+  const [profile, setProfile] = useState<IPublicUser | null>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  const [status, setStatus] = useState<ISocialStatus | null>(null);
+
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [skip, setSkip] = useState<number>(0);
+  const [postsLoading, setPostsLoading] = useState<boolean>(true);
+  const [privateBlocked, setPrivateBlocked] = useState<boolean>(false);
+  const postsLoadingRef = useRef(false);
+
+  useEffect(() => {
+    setProfileLoading(true);
+    setProfile(null);
+    setStatus(null);
+
+    const loadProfile = async () => {
+      try {
+        const data = await usersApi.getUser(id);
+        setProfile(data);
+      } catch (err) {
+        toastError(err, "Не удалось загрузить профиль");
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+
+    if (!isOwn) {
+      socialApi
+        .getStatus(id)
+        .then(setStatus)
+        .catch((err) => {
+          toastError(err, "Не удалось загрузить статус подписки");
+        });
+    }
+  }, [id, isOwn]);
+
+  const loadPosts = useCallback(
+    async (currentSkip: number) => {
+      if (postsLoadingRef.current) return;
+
+      postsLoadingRef.current = true;
+      await delay(1000);
+      setPostsLoading(true);
+
+      try {
+        const data = await postsApi.getUserPosts(id, currentSkip, LIMIT);
+        setPosts((prev) =>
+          currentSkip === 0 ? data.posts : [...prev, ...data.posts],
+        );
+        setHasMore(data.hasMore);
+        setSkip(currentSkip + data.posts.length);
+        setPrivateBlocked(false);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 403) {
+          setPrivateBlocked(true);
+          setPosts([]);
+          setHasMore(false);
+        } else {
+          toastError(err, "Не удалось загрузить посты");
+        }
+      } finally {
+        postsLoadingRef.current = false;
+        setPostsLoading(false);
+      }
+    },
+    [id],
+  );
+
+  useEffect(() => {
+    setPosts([]);
+    setSkip(0);
+    setHasMore(false);
+    setPrivateBlocked(false);
+    setPostsLoading(true);
+    loadPosts(0);
+  }, [loadPosts, status?.isFollowing]);
+
+  const reloadStatus = async () => {
+    setStatus(await socialApi.getStatus(id));
+  };
+
+  const handleFollow = async () => {
+    try {
+      await followsApi.follow(id);
+      await reloadStatus();
+    } catch (err) {
+      toastError(err, "Не удалось подписаться");
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      await followsApi.unfollow(id);
+      await reloadStatus();
+    } catch (err) {
+      toastError(err, "Не удалось отписаться");
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    try {
+      await frApi.cancelRequest(id);
+      await reloadStatus();
+    } catch (err) {
+      toastError(err, "Не удалось отменить заявку");
+    }
+  };
+
+  if (profileLoading) {
+    return <SupportContent isLoading={true} />;
+  }
+
+  if (!profile) {
+    return (
+      <SupportContent type="error" message="Не удалось загрузить профиль" />
+    );
+  }
+
+  return (
+    <main className={styles.main}>
+      <div className={styles.profile}>
+        <div className={styles.profileInfo}>
+          {isOwn ? (
+            <UploadAvatar src={profile?.avatarUrl || ""} size={AVATAR_SIZE} />
+          ) : (
+            <Avatar
+              src={profile?.avatarUrl || ""}
+              sx={{
+                width: AVATAR_SIZE,
+                height: AVATAR_SIZE,
+              }}
+            />
+          )}
+          <div className={styles.info}>
+            <div className={styles.nicknameWrapper}>
+              <Typography variant="h5" className={styles.nickname}>
+                {profile.nickname}
+              </Typography>
+              {isOwn && (
+                <Link to={ERoutes.settings}>
+                  <SettingsOutlinedIcon className={styles.settingsIcon} />
+                </Link>
+              )}
+            </div>
+            <span className={styles.bio}>{profile.bio}</span>
+            <div className={styles.numberInfo}>
+              <span>
+                <b>{profile.postsCount}</b> {getPostsLabel(profile.postsCount)}
+              </span>
+              <span
+                onClick={() => navigate(profileFollowersPath(id))}
+                className={styles.followText}
+              >
+                <b>{profile.followersCount}</b>{" "}
+                {getFollowersLabel(profile.followersCount)}
+              </span>
+              <span
+                onClick={() => navigate(profileFollowingPath(id))}
+                className={styles.followText}
+              >
+                <b>{profile.followingCount}</b>{" "}
+                {getFollowingLabel(profile.followingCount)}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.profileBtns}>
+          {!isOwn && status && (
+            <>
+              {status.isFollowing ? (
+                <button type="button" onClick={handleUnfollow}>
+                  Отписаться
+                </button>
+              ) : status.hasOutgoingRequest ? (
+                <button type="button" onClick={handleCancelRequest}>
+                  Отменить заявку
+                </button>
+              ) : (
+                <button type="button" onClick={handleFollow}>
+                  Подписаться
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      <div className={styles.postsWrapper}>
+        {privateBlocked ? (
+          <div className={styles.privateMessage}>
+            Профиль приватный. Подпишитесь, чтобы видеть посты.
+          </div>
+        ) : (
+          <PostList
+            posts={posts}
+            hasMore={hasMore}
+            loading={postsLoading}
+            onLoadMore={() => loadPosts(skip)}
+          />
+        )}
+      </div>
+
+    </main>
+  );
+};
+
+export default ProfilePage;
