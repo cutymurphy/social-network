@@ -8,11 +8,27 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const clientUrl = configService.get<string>('CLIENT_URL');
+  const clientUrl = configService.get<string>('CLIENT_URL', '');
+  const allowedOrigins = clientUrl
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   const port = configService.get<number>('PORT') ?? 3000;
 
   app.enableCors({
-    origin: clientUrl,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, origin);
+        return;
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   });
   app.useGlobalPipes(

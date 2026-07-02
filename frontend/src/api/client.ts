@@ -32,6 +32,12 @@ export const jsonBody = (data: unknown): RequestInit => {
 
 let refreshing: Promise<string | null> | null = null;
 
+const NO_REFRESH_ON_401_PATHS = new Set([
+  "/auth/refresh",
+  "/auth/login",
+  "/auth/register",
+]);
+
 const refreshAccessToken = (): Promise<string | null> => {
   if (!refreshing) {
     refreshing = fetch(`${BASE_URL}/auth/refresh`, {
@@ -68,7 +74,7 @@ export const apiFetch = async <T>(
     credentials: "include",
   });
 
-  if (res.status === 401 && retryOn401 && path !== "/auth/refresh") {
+  if (res.status === 401 && retryOn401 && !NO_REFRESH_ON_401_PATHS.has(path)) {
     const newToken = await refreshAccessToken();
     if (newToken) {
       const newOptions = {
