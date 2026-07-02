@@ -48,3 +48,29 @@ export interface IChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
 }
+
+export type TUpdateUser = Required<IUpdateUserRequest>;
+export type TUpdateUserErrors = Omit<TUpdateUser, "isPrivate"> & {
+  isPrivate: string;
+};
+export type TUpdatePassword = IChangePasswordRequest;
+
+export const initialUpdateUser: TUpdateUser = {
+  nickname: "",
+  bio: "",
+  isPrivate: false,
+};
+
+export const initialUpdateUserErrors: TUpdateUserErrors = {
+  ...initialUpdateUser,
+  isPrivate: "",
+};
+
+export const initialUpdatePassword: TUpdatePassword = {
+  oldPassword: "",
+  newPassword: "",
+};
+
+export const initialUpdatePasswordErrors: TUpdatePassword = {
+  ...initialUpdatePassword,
+};

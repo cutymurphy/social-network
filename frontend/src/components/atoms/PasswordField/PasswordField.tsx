@@ -1,4 +1,4 @@
-import { useState, type FC, type MouseEvent } from "react";
+import { useId, useState, type FC, type MouseEvent } from "react";
 import type { IPasswordField } from "./types";
 import {
   FormControl,
@@ -17,9 +17,11 @@ export const PasswordField: FC<IPasswordField> = ({
   autoComplete,
   error,
   helperText,
+  label,
   setPassword,
 }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const inputId = useId();
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -33,9 +35,9 @@ export const PasswordField: FC<IPasswordField> = ({
 
   return (
     <FormControl variant="outlined" error={error}>
-      <InputLabel htmlFor="password-input">Пароль</InputLabel>
+      <InputLabel htmlFor={inputId}>{label || "Пароль"}</InputLabel>
       <OutlinedInput
-        id="password-input"
+        id={inputId}
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
         value={password}
@@ -56,7 +58,7 @@ export const PasswordField: FC<IPasswordField> = ({
             </IconButton>
           </InputAdornment>
         }
-        label="Password"
+        label={label || "Пароль"}
       />
       {helperText && (
         <FormHelperText error={error}>{helperText}</FormHelperText>
