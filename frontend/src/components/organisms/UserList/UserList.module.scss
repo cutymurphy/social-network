@@ -1,0 +1,28 @@
+.usersWrapper {
+  width: 100%;
+  height: 66vh;
+  overflow-y: auto;
+}
+
+.usersList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.loader {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.empty {
+  width: 100%;
+  padding: 48px 0;
+  text-align: center;
+  color: var(--grey);
+}

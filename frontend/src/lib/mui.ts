@@ -17,7 +17,7 @@ export const theme = createTheme({
     },
     text: {
       primary: "#ececec",
-      secondary: "#5b5d6a",
+      secondary: "#9c9c9d",
     },
   },
   shape: { borderRadius: 12 },

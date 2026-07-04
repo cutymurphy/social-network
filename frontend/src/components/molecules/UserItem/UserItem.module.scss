@@ -1,0 +1,32 @@
+.user {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  transition: 0.2s;
+  border-radius: 8px;
+}
+
+.user:hover {
+  background-color: var(--grey-2);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.bio {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userInfoSingle {
+  justify-content: center;
+}
