@@ -1,7 +1,19 @@
 .main {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
   margin: 40px 0;
+}
+
+.wrapper {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.usersWrapper {
+  width: 100%;
 }

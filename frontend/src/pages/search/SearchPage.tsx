@@ -1,69 +1,77 @@
-import { useState, type SyntheticEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import * as usersApi from "../../api/users";
 import type { IUserPreview } from "../../types/user";
-import { profilePath } from "../../router";
 import styles from "./SearchPage.module.scss";
+import { SearchField } from "../../components/atoms/SearchField";
+import { delay } from "../../utils/delay";
+import { UserList } from "../../components/organisms/UserList";
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 export const SearchPage = () => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [users, setUsers] = useState<IUserPreview[]>([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [skip, setSkip] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [skip, setSkip] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searched, setSearched] = useState<boolean>(false);
+  const loadingRef = useRef(false);
 
   const runSearch = async (currentSkip: number) => {
     if (!query.trim()) return;
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
     setLoading(true);
+    await delay(1000);
+
     try {
-      const data = await usersApi.searchUsers(query, currentSkip, LIMIT);
-      setUsers((prev) =>
-        currentSkip === 0 ? data.users : [...prev, ...data.users],
+      const data = await usersApi.searchUsers(query.trim(), currentSkip, LIMIT);
+      setUsers((prevUsers) =>
+        currentSkip === 0 ? data.users : [...prevUsers, ...data.users],
       );
       setHasMore(data.hasMore);
       setSkip(currentSkip + data.users.length);
       setSearched(true);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
 
-  const handleSubmit = (e: SyntheticEvent) => {
-    e.preventDefault();
+  const startSearch = () => {
+    if (!query.trim()) return;
+
+    setUsers([]);
     setSkip(0);
+    setHasMore(false);
     runSearch(0);
   };
 
+  useEffect(() => {
+    if (!query.trim()) {
+      setUsers([]);
+      setSkip(0);
+      setHasMore(false);
+      setSearched(false);
+    }
+  }, [query]);
+
   return (
     <main className={styles.main}>
-      <h2>Поиск пользователей</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          placeholder="Никнейм"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button type="submit">Найти</button>
-      </form>
-
-      <ul>
-        {users.map((u) => (
-          <li key={u._id}>
-            <Link to={profilePath(u._id)}>{u.nickname}</Link>
-          </li>
-        ))}
-      </ul>
-
-      {loading && <div>Загрузка...</div>}
-      {!loading && hasMore && (
-        <button onClick={() => runSearch(skip)}>Загрузить ещё</button>
-      )}
-      {!loading && searched && users.length === 0 && (
-        <div>Никого не найдено</div>
-      )}
+      <div className={styles.wrapper}>
+        <h2>Поиск пользователей</h2>
+        <SearchField query={query} setQuery={setQuery} onSearch={startSearch} />
+        <div className={styles.usersWrapper}>
+          <UserList
+            users={users}
+            hasMore={hasMore}
+            loading={loading}
+            searched={searched}
+            onLoadMore={() => runSearch(skip)}
+          />
+        </div>
+      </div>
     </main>
   );
 };
