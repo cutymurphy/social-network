@@ -29,6 +29,13 @@ export const validateField = (field: string, value: string): string => {
           ? EErrors.ERROR_PASSWORD
           : "";
 
+    case "caption":
+      return !trimmed
+        ? EErrors.ERROR_EMPTY
+        : trimmed.length > 2200
+          ? EErrors.ERROR_CAPTION
+          : "";
+
     default:
       return "";
   }

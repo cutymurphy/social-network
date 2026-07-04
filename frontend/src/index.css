@@ -1,6 +1,7 @@
 :root {
   --dark: #11111a;
   --dark-light: #212328;
+  --dark-light-2: #191922;
   --purple: #5d4de3;
   --blue: #34bbf2;
   --grey: #5b5d6a;
@@ -8,6 +9,7 @@
   --red: #c23730;
 
   --bg: var(--dark);
+  --media-bg: var(--dark-light-2);
   --text: var(--white);
   --modal-bg: var(--dark-light);
   --modal-overlay: rgba(0, 0, 0, 0.65);

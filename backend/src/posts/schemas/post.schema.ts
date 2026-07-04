@@ -14,7 +14,7 @@ export class Post {
   @Prop({ required: true })
   mediaType!: 'image' | 'video';
 
-  @Prop({ default: '' })
+  @Prop({ required: true, maxlength: 2200 })
   caption!: string;
 
   @Prop({ default: 0 })

@@ -234,7 +234,7 @@ export const SettingsPage = () => {
             value={userData.bio}
             onChange={(e) => onChangeUserInfo("bio", e.target.value)}
             helperText={
-              userErrors.bio || `${userData.bio.length} / ${MAX_BIO_LENGTH}`
+              userErrors.bio || `${userData.bio.length}/${MAX_BIO_LENGTH}`
             }
             error={!!userErrors.bio}
             slotProps={{

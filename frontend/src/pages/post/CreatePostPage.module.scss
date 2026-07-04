@@ -2,6 +2,62 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 20px;
-  margin: 40px 0;
+  padding: 40px 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fileWrapper,
+.postWrapper {
+  width: 80%;
+  height: 100%;
+}
+
+.fileWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.postWrapper {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 40px;
+  padding-top: 20px;
+}
+
+.mediaWrapper {
+  width: 100%;
+  height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--media-bg);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.previewImage,
+.previewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.captionWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  justify-content: space-between;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.btns {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
