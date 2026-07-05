@@ -6,6 +6,8 @@ export interface IUserList {
   hasMore: boolean;
   loading: boolean;
   searched?: boolean;
+  emptyMessage?: string;
+  scrollContainerId?: string;
   userClassName?: string;
   usersWrapperClassName?: string;
   renderUserAction?: (user: IUserPreview) => ReactNode;

@@ -61,7 +61,7 @@ export class FollowRequestsService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1)
-      .populate('requesterId', 'nickname avatarUrl');
+      .populate('requesterId', 'nickname avatarUrl bio');
 
     const hasMore = incomingRequests.length > limit;
     if (hasMore) incomingRequests.pop();
@@ -81,7 +81,7 @@ export class FollowRequestsService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1)
-      .populate('targetId', 'nickname avatarUrl');
+      .populate('targetId', 'nickname avatarUrl bio');
 
     const hasMore = outgoingRequests.length > limit;
     if (hasMore) outgoingRequests.pop();

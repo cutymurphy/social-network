@@ -7,11 +7,15 @@ import type { IUserPreview } from "../../../types/user";
 import { UserItem } from "../../molecules/UserItem";
 import clsx from "clsx";
 
+const DEFAULT_SCROLL_ID = "users-scroll";
+
 export const UserList: FC<IUserList> = ({
   users,
   hasMore,
   loading,
   searched,
+  emptyMessage = "Пусто",
+  scrollContainerId = DEFAULT_SCROLL_ID,
   userClassName,
   usersWrapperClassName,
   renderUserAction,
@@ -29,7 +33,7 @@ export const UserList: FC<IUserList> = ({
     return (
       <div className={styles.empty}>
         {searched === undefined
-          ? "Пусто"
+          ? emptyMessage
           : !searched
             ? "Начните поиск"
             : "Никого не найдено"}
@@ -39,7 +43,7 @@ export const UserList: FC<IUserList> = ({
 
   return (
     <div
-      id="users-scroll"
+      id={scrollContainerId}
       className={clsx(styles.usersWrapper, usersWrapperClassName)}
     >
       <InfiniteScroll
@@ -51,7 +55,7 @@ export const UserList: FC<IUserList> = ({
             <CircularProgress size={28} />
           </div>
         }
-        scrollableTarget="users-scroll"
+        scrollableTarget={scrollContainerId}
         scrollThreshold={0.9}
       >
         <div className={styles.usersList}>

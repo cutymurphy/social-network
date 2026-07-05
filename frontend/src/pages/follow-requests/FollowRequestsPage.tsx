@@ -1,95 +1,42 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import * as frApi from "../../api/followRequests";
-import type {
-  IFollowRequestIncoming,
-  IFollowRequestOutgoing,
-} from "../../types/follow";
-import { profilePath } from "../../router";
-import { toastError } from "../../lib/toast";
+import { useState, type SyntheticEvent } from "react";
 import styles from "./FollowRequestsPage.module.scss";
+import { Box, Tab } from "@mui/material";
+import { TabContext, TabList } from "@mui/lab";
+import {
+  IncomingRequestsTab,
+  OutgoingRequestsTab,
+} from "../../components/organisms/FollowRequests";
+
+type TRequestTab = "incoming" | "outgoing";
 
 export const FollowRequestsPage = () => {
-  const [incoming, setIncoming] = useState<IFollowRequestIncoming[]>([]);
-  const [outgoing, setOutgoing] = useState<IFollowRequestOutgoing[]>([]);
+  const [requestTab, setRequestTab] = useState<TRequestTab>("incoming");
 
-  const loadAll = async () => {
-    try {
-      const [inc, out] = await Promise.all([
-        frApi.getIncoming(0, 20),
-        frApi.getOutgoing(0, 20),
-      ]);
-      setIncoming(inc.incomingRequests);
-      setOutgoing(out.outgoingRequests);
-    } catch (err) {
-      toastError(err, "Не удалось загрузить заявки");
-    }
-  };
-
-  useEffect(() => {
-    loadAll();
-  }, []);
-
-  const handleAccept = async (req: IFollowRequestIncoming) => {
-    try {
-      await frApi.acceptRequest(req._id);
-      await loadAll();
-    } catch (err) {
-      toastError(err, "Не удалось принять заявку");
-    }
-  };
-
-  const handleReject = async (req: IFollowRequestIncoming) => {
-    try {
-      await frApi.rejectRequest(req.requesterId._id);
-      await loadAll();
-    } catch (err) {
-      toastError(err, "Не удалось отклонить заявку");
-    }
-  };
-
-  const handleCancel = async (req: IFollowRequestOutgoing) => {
-    try {
-      await frApi.cancelRequest(req.targetId._id);
-      await loadAll();
-    } catch (err) {
-      toastError(err, "Не удалось отменить заявку");
-    }
+  const handleChangeTab = (_: SyntheticEvent, newValue: TRequestTab) => {
+    setRequestTab(newValue);
   };
 
   return (
     <main className={styles.main}>
-      <h2>Входящие заявки</h2>
-      {incoming.length > 0 && (
-        <ul>
-          {incoming.map((req) => (
-            <li key={req._id}>
-              <Link to={profilePath(req.requesterId._id)}>
-                {req.requesterId.nickname}
-              </Link>
-              <button onClick={() => handleAccept(req)}>Принять</button>
-              <button onClick={() => handleReject(req)}>Отклонить</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {incoming.length === 0 && <div>Входящих заявок нет</div>}
+      <div className={styles.wrapper}>
+        <TabContext value={requestTab}>
+          <Box className={styles.tabs}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <TabList
+                onChange={handleChangeTab}
+                aria-label="Заявки на подписку"
+                variant="fullWidth"
+              >
+                <Tab label="Входящие заявки" value="incoming" />
+                <Tab label="Исходящие заявки" value="outgoing" />
+              </TabList>
+            </Box>
 
-      <h2>Исходящие заявки</h2>
-      {outgoing.length > 0 && (
-        <ul>
-          {outgoing.map((req) => (
-            <li key={req._id}>
-              <Link to={profilePath(req.targetId._id)}>
-                {req.targetId.nickname}
-              </Link>
-
-              <button onClick={() => handleCancel(req)}>Отменить</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {outgoing.length === 0 && <div>Исходящих заявок нет</div>}
+            <IncomingRequestsTab />
+            <OutgoingRequestsTab active={requestTab === "outgoing"} />
+          </Box>
+        </TabContext>
+      </div>
     </main>
   );
 };
