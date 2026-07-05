@@ -6,9 +6,11 @@ import { getBackgroundLocation, profilePath } from "../../../router";
 import type { IFollowListModal } from "./types";
 import type { IUserPreview } from "../../../types/user";
 import * as followsApi from "../../../api/follows";
+import { useAuth } from "../../../auth/AuthContext";
+import { toastError } from "../../../lib/toast";
 import styles from "./FollowListModal.module.scss";
 import CloseIcon from "@mui/icons-material/Close";
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { UserList } from "../UserList";
 import { delay } from "../../../utils/delay";
 
@@ -17,14 +19,17 @@ const LIMIT = 20;
 
 export const FollowListModal: FC<IFollowListModal> = ({ mode }) => {
   const { id = "" } = useParams();
+  const { user: authUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const background = getBackgroundLocation(location.state);
+  const isOwn = authUser?.userId === id;
 
   const [users, setUsers] = useState<IUserPreview[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [skip, setSkip] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(() => new Set());
   const loadingRef = useRef(false);
 
   const load = useCallback(
@@ -59,6 +64,66 @@ export const FollowListModal: FC<IFollowListModal> = ({ mode }) => {
     },
     [id, mode],
   );
+
+  const setUserPending = (userId: string, pending: boolean) => {
+    setPendingIds((prev) => {
+      const next = new Set(prev);
+      if (pending) {
+        next.add(userId);
+      } else {
+        next.delete(userId);
+      }
+      return next;
+    });
+  };
+
+  const handleUnfollow = async (userId: string) => {
+    setUserPending(userId, true);
+    try {
+      await followsApi.unfollow(userId);
+      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+    } catch (err) {
+      toastError(err, "Не удалось отписаться");
+    } finally {
+      setUserPending(userId, false);
+    }
+  };
+
+  const handleRemoveFollower = async (userId: string) => {
+    setUserPending(userId, true);
+    try {
+      await followsApi.removeFollower(userId);
+      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+    } catch (err) {
+      toastError(err, "Не удалось удалить подписчика");
+    } finally {
+      setUserPending(userId, false);
+    }
+  };
+
+  const renderUserAction = (user: IUserPreview) => {
+    if (!isOwn) return null;
+
+    const isPending = pendingIds.has(user._id);
+    const label = mode === "followers" ? "Удалить" : "Отписка";
+    const onClick =
+      mode === "followers"
+        ? () => handleRemoveFollower(user._id)
+        : () => handleUnfollow(user._id);
+
+    return (
+      <Button
+        type="button"
+        size="small"
+        variant="outlined"
+        disabled={isPending}
+        onClick={onClick}
+        sx={{ whiteSpace: "nowrap" }}
+      >
+        {label}
+      </Button>
+    );
+  };
 
   const handleClose = useCallback(() => {
     if (background) {
@@ -124,6 +189,7 @@ export const FollowListModal: FC<IFollowListModal> = ({ mode }) => {
             onLoadMore={() => load(skip)}
             userClassName={styles.user}
             usersWrapperClassName={styles.usersWrapper}
+            renderUserAction={isOwn ? renderUserAction : undefined}
           />
         </div>
       </div>

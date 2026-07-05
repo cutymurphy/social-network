@@ -14,6 +14,7 @@ export const UserList: FC<IUserList> = ({
   searched,
   userClassName,
   usersWrapperClassName,
+  renderUserAction,
   onLoadMore,
 }) => {
   if (loading && users.length === 0) {
@@ -55,7 +56,12 @@ export const UserList: FC<IUserList> = ({
       >
         <div className={styles.usersList}>
           {users.map((user: IUserPreview) => (
-            <UserItem key={user._id} userClassName={userClassName} {...user} />
+            <UserItem
+              key={user._id}
+              userClassName={userClassName}
+              action={renderUserAction?.(user)}
+              {...user}
+            />
           ))}
         </div>
       </InfiniteScroll>

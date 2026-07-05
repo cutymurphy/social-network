@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface IUserItem {
   _id: string;
   nickname: string;
@@ -5,4 +7,5 @@ export interface IUserItem {
   bio?: string;
   avatarSize?: string;
   userClassName?: string;
+  action?: ReactNode;
 }

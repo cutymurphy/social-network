@@ -65,11 +65,7 @@ export class FollowsService {
     return await this.socialActions.follow(followerId, followingId);
   }
 
-  async unfollowUser(followerId: string, followingId: string) {
-    if (followerId === followingId) {
-      throw new ConflictException('You cannot unfollow yourself');
-    }
-
+  private async removeFollowRelation(followerId: string, followingId: string) {
     const result = await this.followModel.deleteOne({
       followerId: new Types.ObjectId(followerId),
       followingId: new Types.ObjectId(followingId),
@@ -96,6 +92,22 @@ export class FollowsService {
     );
 
     return { success: true };
+  }
+
+  async unfollowUser(followerId: string, followingId: string) {
+    if (followerId === followingId) {
+      throw new ConflictException('You cannot unfollow yourself');
+    }
+
+    return this.removeFollowRelation(followerId, followingId);
+  }
+
+  async removeFollower(userId: string, followerId: string) {
+    if (userId === followerId) {
+      throw new ConflictException('You cannot remove yourself');
+    }
+
+    return this.removeFollowRelation(followerId, userId);
   }
 
   async getFollowing(userId: string, skip = 0, limit = 20) {

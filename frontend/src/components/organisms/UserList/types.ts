@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { IUserPreview } from "../../../types/user";
 
 export interface IUserList {
@@ -7,5 +8,6 @@ export interface IUserList {
   searched?: boolean;
   userClassName?: string;
   usersWrapperClassName?: string;
+  renderUserAction?: (user: IUserPreview) => ReactNode;
   onLoadMore: () => void;
 }

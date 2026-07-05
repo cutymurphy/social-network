@@ -1,10 +1,10 @@
-import { apiFetch } from './client';
+import { apiFetch } from "./client";
 import type {
   IFollowersResponse,
   IFollowingResponse,
   IFollowResponse,
   ISuccessResponse,
-} from '../types/api';
+} from "../types/api";
 
 export const getFollowing = (userId: string, skip = 0, limit = 20) => {
   const params = new URLSearchParams({
@@ -27,11 +27,17 @@ export const getFollowers = (userId: string, skip = 0, limit = 20) => {
 };
 
 export const follow = (userId: string) => {
-  return apiFetch<IFollowResponse>(`/follows/${userId}`, { method: 'POST' });
+  return apiFetch<IFollowResponse>(`/follows/${userId}`, { method: "POST" });
 };
 
 export const unfollow = (userId: string) => {
   return apiFetch<ISuccessResponse>(`/follows/${userId}`, {
-    method: 'DELETE',
+    method: "DELETE",
+  });
+};
+
+export const removeFollower = (followerId: string) => {
+  return apiFetch<ISuccessResponse>(`/follows/${followerId}/remove-follower`, {
+    method: "DELETE",
   });
 };

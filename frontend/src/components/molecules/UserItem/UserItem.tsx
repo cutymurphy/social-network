@@ -13,9 +13,10 @@ export const UserItem: FC<IUserItem> = ({
   bio,
   avatarSize = "50px",
   userClassName,
+  action,
 }) => (
-  <Link to={profilePath(id)}>
-    <div className={clsx(styles.user, userClassName)}>
+  <div className={clsx(styles.user, userClassName)}>
+    <Link to={profilePath(id)} className={styles.userLink}>
       <Avatar
         alt={`avatar of ${nickname}`}
         src={avatarUrl || ""}
@@ -38,8 +39,13 @@ export const UserItem: FC<IUserItem> = ({
           </Typography>
         )}
       </div>
-    </div>
-  </Link>
+    </Link>
+    {action && (
+      <div className={styles.action} onClick={(e) => e.stopPropagation()}>
+        {action}
+      </div>
+    )}
+  </div>
 );
 
 export default UserItem;

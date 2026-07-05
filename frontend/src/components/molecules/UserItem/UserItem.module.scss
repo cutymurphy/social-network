@@ -4,12 +4,26 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  transition: 0.2s;
   border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover:not(:has(.action:hover)) {
+    background-color: var(--user-hover-bg, var(--grey-2));
+  }
 }
 
-.user:hover {
-  background-color: var(--grey-2);
+.userLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.action {
+  flex-shrink: 0;
 }
 
 .userInfo {

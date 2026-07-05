@@ -43,6 +43,6 @@
   overflow-y: auto;
 }
 
-.user:hover {
-  background-color: var(--dark);
+.user {
+  --user-hover-bg: var(--dark);
 }
