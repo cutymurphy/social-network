@@ -19,7 +19,7 @@ import type { ISocialStatus } from "../../types/social";
 import { PostList } from "../../components/organisms/PostList";
 import { toastError } from "../../lib/toast";
 import styles from "./ProfilePage.module.scss";
-import { Avatar, Typography } from "@mui/material";
+import { Avatar, Button, Typography } from "@mui/material";
 import {
   getFollowersLabel,
   getFollowingLabel,
@@ -220,17 +220,32 @@ export const ProfilePage = () => {
           {!isOwn && status && (
             <>
               {status.isFollowing ? (
-                <button type="button" onClick={handleUnfollow}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  onClick={handleUnfollow}
+                  fullWidth
+                >
                   Отписаться
-                </button>
+                </Button>
               ) : status.hasOutgoingRequest ? (
-                <button type="button" onClick={handleCancelRequest}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  onClick={handleCancelRequest}
+                  fullWidth
+                >
                   Отменить заявку
-                </button>
+                </Button>
               ) : (
-                <button type="button" onClick={handleFollow}>
+                <Button
+                  type="button"
+                  variant="contained"
+                  onClick={handleFollow}
+                  fullWidth
+                >
                   Подписаться
-                </button>
+                </Button>
               )}
             </>
           )}
