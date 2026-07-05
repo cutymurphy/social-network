@@ -4,4 +4,5 @@ export interface IUserItem {
   avatarUrl: string;
   bio?: string;
   avatarSize?: string;
+  userClassName?: string;
 }

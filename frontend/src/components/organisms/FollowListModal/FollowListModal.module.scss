@@ -1,0 +1,48 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  max-height: 80vh;
+  background-color: var(--modal-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(236, 236, 236, 0.12);
+}
+
+.modalHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 16px 48px 16px 20px;
+}
+
+.modalCloseIcon {
+  cursor: pointer;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+}
+
+.modalContent {
+  width: 100%;
+  padding: 0 20px 20px;
+}
+
+.usersWrapper {
+  height: unset;
+  min-height: 120px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.user:hover {
+  background-color: var(--dark);
+}

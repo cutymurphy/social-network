@@ -12,9 +12,10 @@ export const UserItem: FC<IUserItem> = ({
   avatarUrl,
   bio,
   avatarSize = "50px",
+  userClassName,
 }) => (
   <Link to={profilePath(id)}>
-    <div className={styles.user}>
+    <div className={clsx(styles.user, userClassName)}>
       <Avatar
         alt={`avatar of ${nickname}`}
         src={avatarUrl || ""}

@@ -7,3 +7,5 @@ export {
   profileFollowingPath,
   postPath,
 } from "./routes";
+export { createModalState, getBackgroundLocation, isPostRoute } from "./helpers";
+export type { TAppLocationState } from "./types";

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
+  createModalState,
   ERoutes,
   profileFollowersPath,
   profileFollowingPath,
@@ -35,7 +36,7 @@ const AVATAR_SIZE = "150px";
 export const ProfilePage = () => {
   const { id = "" } = useParams();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const location = useLocation();
   const isOwn = user?.userId === id;
 
   const [profile, setProfile] = useState<IPublicUser | null>(null);
@@ -49,33 +50,15 @@ export const ProfilePage = () => {
   const [privateBlocked, setPrivateBlocked] = useState<boolean>(false);
   const postsLoadingRef = useRef(false);
 
-  useEffect(() => {
-    setProfileLoading(true);
-    setProfile(null);
-    setStatus(null);
+  const followersLinkProps = {
+    to: profileFollowersPath(id),
+    state: createModalState(location),
+  };
 
-    const loadProfile = async () => {
-      try {
-        const data = await usersApi.getUser(id);
-        setProfile(data);
-      } catch (err) {
-        toastError(err, "Не удалось загрузить профиль");
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-
-    loadProfile();
-
-    if (!isOwn) {
-      socialApi
-        .getStatus(id)
-        .then(setStatus)
-        .catch((err) => {
-          toastError(err, "Не удалось загрузить статус подписки");
-        });
-    }
-  }, [id, isOwn]);
+  const followingLinkProps = {
+    to: profileFollowingPath(id),
+    state: createModalState(location),
+  };
 
   const loadPosts = useCallback(
     async (currentSkip: number) => {
@@ -109,15 +92,6 @@ export const ProfilePage = () => {
     [id],
   );
 
-  useEffect(() => {
-    setPosts([]);
-    setSkip(0);
-    setHasMore(false);
-    setPrivateBlocked(false);
-    setPostsLoading(true);
-    loadPosts(0);
-  }, [loadPosts, status?.isFollowing]);
-
   const reloadStatus = async () => {
     setStatus(await socialApi.getStatus(id));
   };
@@ -148,6 +122,43 @@ export const ProfilePage = () => {
       toastError(err, "Не удалось отменить заявку");
     }
   };
+
+  useEffect(() => {
+    setProfileLoading(true);
+    setProfile(null);
+    setStatus(null);
+
+    const loadProfile = async () => {
+      try {
+        const data = await usersApi.getUser(id);
+        setProfile(data);
+      } catch (err) {
+        toastError(err, "Не удалось загрузить профиль");
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadProfile();
+
+    if (!isOwn) {
+      socialApi
+        .getStatus(id)
+        .then(setStatus)
+        .catch((err) => {
+          toastError(err, "Не удалось загрузить статус подписки");
+        });
+    }
+  }, [id, isOwn]);
+
+  useEffect(() => {
+    setPosts([]);
+    setSkip(0);
+    setHasMore(false);
+    setPrivateBlocked(false);
+    setPostsLoading(true);
+    loadPosts(0);
+  }, [loadPosts, status?.isFollowing]);
 
   if (profileLoading) {
     return <SupportContent isLoading={true} />;
@@ -190,20 +201,18 @@ export const ProfilePage = () => {
               <span>
                 <b>{profile.postsCount}</b> {getPostsLabel(profile.postsCount)}
               </span>
-              <span
-                onClick={() => navigate(profileFollowersPath(id))}
-                className={styles.followText}
-              >
-                <b>{profile.followersCount}</b>{" "}
-                {getFollowersLabel(profile.followersCount)}
-              </span>
-              <span
-                onClick={() => navigate(profileFollowingPath(id))}
-                className={styles.followText}
-              >
-                <b>{profile.followingCount}</b>{" "}
-                {getFollowingLabel(profile.followingCount)}
-              </span>
+              <Link {...followersLinkProps} className={styles.itemLink}>
+                <span className={styles.followText}>
+                  <b>{profile.followersCount}</b>{" "}
+                  {getFollowersLabel(profile.followersCount)}
+                </span>
+              </Link>
+              <Link {...followingLinkProps} className={styles.itemLink}>
+                <span className={styles.followText}>
+                  <b>{profile.followingCount}</b>{" "}
+                  {getFollowingLabel(profile.followingCount)}
+                </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -241,7 +250,6 @@ export const ProfilePage = () => {
           />
         )}
       </div>
-
     </main>
   );
 };

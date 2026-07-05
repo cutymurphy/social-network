@@ -1,4 +1,4 @@
-export { ProfilePage } from './ProfilePage';
-export { ProfilePageRoute } from './ProfilePageRoute';
-export { FollowListPage } from './FollowListPage';
-export type { IFollowListPageProps } from './types';
+export { ProfilePage } from "./ProfilePage";
+export { ProfilePageRoute } from "./ProfilePageRoute";
+export { ProfileFollowersPage } from "./ProfileFollowersPage";
+export { ProfileFollowingPage } from "./ProfileFollowingPage";

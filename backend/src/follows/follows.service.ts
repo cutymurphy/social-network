@@ -107,7 +107,7 @@ export class FollowsService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1)
-      .populate('followingId', 'nickname avatarUrl');
+      .populate('followingId', 'nickname avatarUrl bio');
 
     const hasMore = followings.length > limit;
     if (hasMore) followings.pop();
@@ -127,7 +127,7 @@ export class FollowsService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1)
-      .populate('followerId', 'nickname avatarUrl');
+      .populate('followerId', 'nickname avatarUrl bio');
 
     const hasMore = followers.length > limit;
     if (hasMore) followers.pop();
