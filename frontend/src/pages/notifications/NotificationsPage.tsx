@@ -1,33 +1,34 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as notificationsApi from "../../api/notifications";
 import type { INotification } from "../../types/notification";
-import { ENotificationType } from "../../types/notification";
-import { createModalState, profilePath, postPath } from "../../router";
 import { toastError } from "../../lib/toast";
+import { delay } from "../../utils/delay";
+import { Notification } from "../../components/molecules/Notification";
 import styles from "./NotificationsPage.module.scss";
+import { CircularProgress } from "@mui/material";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const LIMIT = 20;
-
-const TEXT: Record<ENotificationType, string> = {
-  [ENotificationType.like]: "поставил(а) лайк",
-  [ENotificationType.comment]: "прокомментировал(а)",
-  [ENotificationType.follow]: "подписался(ась) на вас",
-  [ENotificationType.follow_request]: "отправил(а) заявку на подписку",
-  [ENotificationType.follow_request_accepted]: "принял(а) вашу заявку",
-};
+const SCROLL_ID = "notifications-scroll";
 
 export const NotificationsPage = () => {
-  const location = useLocation();
   const [items, setItems] = useState<INotification[]>([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [skip, setSkip] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [unreadIds, setUnreadIds] = useState<Set<string>>(() => new Set());
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [skip, setSkip] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const loadingRef = useRef(false);
 
-  const load = useCallback(async (currentSkip: number) => {
+  const loadMore = useCallback(async (currentSkip: number) => {
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
     setLoading(true);
+    await delay(500);
+
     try {
       const data = await notificationsApi.getNotifications(currentSkip, LIMIT);
+
       setItems((prev) =>
         currentSkip === 0
           ? data.notifications
@@ -38,49 +39,89 @@ export const NotificationsPage = () => {
     } catch (err) {
       toastError(err, "Не удалось загрузить уведомления");
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const init = async () => {
-      await load(0);
+    let cancelled = false;
 
-      notificationsApi.markAsSeen().catch(() => {});
+    const init = async () => {
+      setLoading(true);
+
+      try {
+        await delay(500);
+        if (cancelled) return;
+
+        const data = await notificationsApi.getNotifications(0, LIMIT);
+        if (cancelled) return;
+
+        setUnreadIds(
+          new Set(
+            data.notifications
+              .filter((item) => !item.read)
+              .map((item) => String(item._id)),
+          ),
+        );
+        setItems(data.notifications);
+        setHasMore(data.hasMore);
+        setSkip(data.notifications.length);
+
+        await notificationsApi.markAsSeen();
+      } catch (err) {
+        if (!cancelled) {
+          toastError(err, "Не удалось загрузить уведомления");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     };
 
     init();
-  }, [load]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className={styles.main}>
       <h2>Уведомления</h2>
-      <div className={styles.notifications}>
-        {items.map((n) => (
-          <div
-            key={n._id}
-            style={{ fontWeight: n.read ? "normal" : "bold" }}
-            className={styles.notification}
+      {loading && items.length === 0 ? (
+        <div className={styles.loader}>
+          <CircularProgress />
+        </div>
+      ) : !loading && items.length === 0 ? (
+        <div className={styles.empty}>Уведомлений нет</div>
+      ) : (
+        <div id={SCROLL_ID} className={styles.scrollWrapper}>
+          <InfiniteScroll
+            dataLength={items.length}
+            next={() => loadMore(skip)}
+            hasMore={hasMore}
+            loader={
+              <div className={styles.loader}>
+                <CircularProgress size={28} />
+              </div>
+            }
+            scrollableTarget={SCROLL_ID}
+            scrollThreshold={0.9}
           >
-            <Link to={profilePath(n.fromUserId._id)}>
-              {n.fromUserId.nickname}
-            </Link>{" "}
-            {TEXT[n.type]}
-            {n.postId && (
-              <Link to={postPath(n.postId)} state={createModalState(location)}>
-                (пост)
-              </Link>
-            )}
-          </div>
-        ))}
-      </div>
-      {loading && <div>Загрузка...</div>}
-      {!loading && hasMore && (
-        <button type="button" onClick={() => load(skip)}>
-          Загрузить ещё
-        </button>
+            <div className={styles.list}>
+              {items.map((notification: INotification) => (
+                <Notification
+                  key={notification._id}
+                  isUnread={unreadIds.has(String(notification._id))}
+                  notification={notification}
+                />
+              ))}
+            </div>
+          </InfiniteScroll>
+        </div>
       )}
-      {!loading && items.length === 0 && <div>Уведомлений нет</div>}
     </main>
   );
 };

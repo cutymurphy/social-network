@@ -8,6 +8,12 @@ import {
 } from './schemas/notification.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 
+type PopulatedPostPreview = {
+  _id: Types.ObjectId;
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+};
+
 @Injectable()
 export class NotificationsService {
   constructor(
@@ -53,6 +59,16 @@ export class NotificationsService {
     return createdAt <= lastSeenAt;
   }
 
+  private isPopulatedPost(value: unknown): value is PopulatedPostPreview {
+    return (
+      typeof value === 'object' &&
+      value !== null &&
+      '_id' in value &&
+      'mediaUrl' in value &&
+      'mediaType' in value
+    );
+  }
+
   async getUserNotifications(userId: string, skip = 0, limit = 20) {
     limit = Math.min(Math.max(limit, 1), 50);
 
@@ -68,7 +84,8 @@ export class NotificationsService {
         })
         .skip(skip)
         .limit(limit + 1)
-        .populate('fromUserId', 'nickname avatarUrl');
+        .populate('fromUserId', 'nickname avatarUrl')
+        .populate('postId', 'mediaUrl mediaType');
 
       const hasMore = notifications.length > limit;
       if (hasMore) notifications.pop();
@@ -76,9 +93,23 @@ export class NotificationsService {
       return {
         notifications: notifications.map((notification) => {
           const item = notification.toObject();
+          const populatedPost = item.postId;
+
+          const post = this.isPopulatedPost(populatedPost)
+            ? {
+                _id: String(populatedPost._id),
+                mediaUrl: populatedPost.mediaUrl,
+                mediaType: populatedPost.mediaType,
+              }
+            : undefined;
+
+          const postId =
+            post?._id ?? (populatedPost ? String(populatedPost) : undefined);
 
           return {
             ...item,
+            postId,
+            post,
             read: this.isRead(item.createdAt ?? new Date(0), lastSeenAt),
           };
         }),
