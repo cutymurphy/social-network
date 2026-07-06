@@ -29,6 +29,7 @@ import { UploadAvatar } from "../../components/atoms/UploadAvatar";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import { SupportContent } from "../../components/atoms/SupportContent";
 import { delay } from "../../utils/delay";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 const LIMIT = 12;
 const AVATAR_SIZE = "150px";
@@ -254,7 +255,17 @@ export const ProfilePage = () => {
       <div className={styles.postsWrapper}>
         {privateBlocked ? (
           <div className={styles.privateMessage}>
-            Профиль приватный. Подпишитесь, чтобы видеть посты.
+            <LockOutlinedIcon
+              sx={{
+                width: "50px",
+                height: "50px",
+                border: "1.5px solid var(--grey)",
+                padding: "8px",
+                borderRadius: "100%",
+              }}
+            />
+            Это закрытый профиль. Подпишитесь на этого пользователя, чтобы
+            видеть его фото и видео.
           </div>
         ) : (
           <PostList
