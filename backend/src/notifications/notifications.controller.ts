@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { ApiQuery } from '@nestjs/swagger';
 
@@ -22,8 +22,8 @@ export class NotificationsController {
     return this.notificationsService.countUnread(req.user.userId);
   }
 
-  @Patch(':id/read')
-  mark(@Req() req: any, @Param('id') id: string) {
-    return this.notificationsService.markAsRead(id, req.user.userId);
+  @Post('mark-seen')
+  markAsSeen(@Req() req: any) {
+    return this.notificationsService.markAsSeen(req.user.userId);
   }
 }

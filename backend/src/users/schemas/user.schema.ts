@@ -31,6 +31,9 @@ export class User {
 
   @Prop()
   refreshTokenHash?: string;
+
+  @Prop({ type: Date, default: null })
+  notificationsLastSeenAt?: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

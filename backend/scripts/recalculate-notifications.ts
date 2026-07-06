@@ -55,7 +55,6 @@ async function run() {
       userId: post.authorId,
       fromUserId: like.userId,
       postId: like.postId,
-      read: false,
     });
   }
 
@@ -79,7 +78,6 @@ async function run() {
       userId: post.authorId,
       fromUserId: comment.userId,
       postId: comment.postId,
-      read: false,
     });
   }
 
@@ -92,7 +90,6 @@ async function run() {
       type: ENotificationTypes.follow,
       userId: follow.followingId,
       fromUserId: follow.followerId,
-      read: false,
     });
   }
 

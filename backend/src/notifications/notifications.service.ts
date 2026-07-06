@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -10,12 +6,16 @@ import {
   Notification,
   NotificationDocument,
 } from './schemas/notification.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     @InjectModel(Notification.name)
     private notificationModel: Model<NotificationDocument>,
+
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
   ) {}
 
   async create(
@@ -36,9 +36,29 @@ export class NotificationsService {
     }
   }
 
+  private async getLastSeenAt(userId: string): Promise<Date | null> {
+    const user = await this.userModel
+      .findById(userId)
+      .select('notificationsLastSeenAt')
+      .lean();
+
+    return user?.notificationsLastSeenAt ?? null;
+  }
+
+  private isRead(createdAt: Date, lastSeenAt: Date | null): boolean {
+    if (!lastSeenAt) {
+      return false;
+    }
+
+    return createdAt <= lastSeenAt;
+  }
+
   async getUserNotifications(userId: string, skip = 0, limit = 20) {
     limit = Math.min(Math.max(limit, 1), 50);
+
     try {
+      const lastSeenAt = await this.getLastSeenAt(userId);
+
       const notifications = await this.notificationModel
         .find({
           userId: new Types.ObjectId(userId),
@@ -54,7 +74,14 @@ export class NotificationsService {
       if (hasMore) notifications.pop();
 
       return {
-        notifications,
+        notifications: notifications.map((notification) => {
+          const item = notification.toObject();
+
+          return {
+            ...item,
+            read: this.isRead(item.createdAt ?? new Date(0), lastSeenAt),
+          };
+        }),
         hasMore,
       };
     } catch {
@@ -62,40 +89,33 @@ export class NotificationsService {
     }
   }
 
-  async markAsRead(id: string, userId: string) {
+  async markAsSeen(userId: string) {
     try {
-      const result = await this.notificationModel.updateOne(
-        {
-          _id: new Types.ObjectId(id),
-          userId: new Types.ObjectId(userId),
-        },
-        {
-          $set: {
-            read: true,
-          },
-        },
+      await this.userModel.updateOne(
+        { _id: new Types.ObjectId(userId) },
+        { $set: { notificationsLastSeenAt: new Date() } },
       );
 
-      if (result.matchedCount === 0) {
-        throw new NotFoundException('Notification not found');
-      }
-
       return { success: true };
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        throw e;
-      }
-
-      throw new InternalServerErrorException('Failed to update notification');
+    } catch {
+      throw new InternalServerErrorException(
+        'Failed to mark notifications as seen',
+      );
     }
   }
 
   async countUnread(userId: string) {
     try {
-      return await this.notificationModel.countDocuments({
+      const lastSeenAt = await this.getLastSeenAt(userId);
+      const filter: Record<string, unknown> = {
         userId: new Types.ObjectId(userId),
-        read: false,
-      });
+      };
+
+      if (lastSeenAt) {
+        filter.createdAt = { $gt: lastSeenAt };
+      }
+
+      return await this.notificationModel.countDocuments(filter);
     } catch {
       throw new InternalServerErrorException('Failed to count notifications');
     }

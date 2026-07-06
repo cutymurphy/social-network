@@ -25,8 +25,8 @@ export class Notification {
   @Prop({ type: Types.ObjectId, ref: 'Post', required: false })
   postId?: Types.ObjectId;
 
-  @Prop({ default: false })
-  read!: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

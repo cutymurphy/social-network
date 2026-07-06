@@ -21,6 +21,7 @@
     "recalc:counters": "ts-node scripts/recalculate-post-counters.ts",
     "recalc:users": "ts-node scripts/recalculate-user-followers.ts",
     "recalc:notifications": "ts-node scripts/recalculate-notifications.ts",
+    "migrate:notifications-read": "ts-node scripts/migrate-notifications-read.ts",
     "cleanup:orphans": "ts-node scripts/cleanup-orphans.ts"
   },
   "dependencies": {
