@@ -3,7 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import * as notificationsApi from "../../api/notifications";
 import type { INotification } from "../../types/notification";
 import { ENotificationType } from "../../types/notification";
-import { createPostModalState, profilePath, postPath } from "../../router";
+import { createModalState, profilePath, postPath } from "../../router";
+import { toastError } from "../../lib/toast";
 import styles from "./NotificationsPage.module.scss";
 
 const LIMIT = 20;
@@ -34,22 +35,22 @@ export const NotificationsPage = () => {
       );
       setHasMore(data.hasMore);
       setSkip(currentSkip + data.notifications.length);
+    } catch (err) {
+      toastError(err, "Не удалось загрузить уведомления");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    load(0);
-  }, [load]);
+    const init = async () => {
+      await load(0);
 
-  const handleRead = async (n: INotification) => {
-    if (n.read) return;
-    await notificationsApi.markAsRead(n._id);
-    setItems((prev) =>
-      prev.map((it) => (it._id === n._id ? { ...it, read: true } : it)),
-    );
-  };
+      notificationsApi.markAsSeen().catch(() => {});
+    };
+
+    init();
+  }, [load]);
 
   return (
     <main className={styles.main}>
@@ -58,7 +59,6 @@ export const NotificationsPage = () => {
         {items.map((n) => (
           <div
             key={n._id}
-            onClick={() => handleRead(n)}
             style={{ fontWeight: n.read ? "normal" : "bold" }}
             className={styles.notification}
           >
@@ -67,20 +67,18 @@ export const NotificationsPage = () => {
             </Link>{" "}
             {TEXT[n.type]}
             {n.postId && (
-              <Link
-                to={postPath(n.postId)}
-                state={createPostModalState(location)}
-              >
+              <Link to={postPath(n.postId)} state={createModalState(location)}>
                 (пост)
               </Link>
             )}
           </div>
         ))}
       </div>
-      {/* {unreadCount()} */}
       {loading && <div>Загрузка...</div>}
       {!loading && hasMore && (
-        <button onClick={() => load(skip)}>Загрузить ещё</button>
+        <button type="button" onClick={() => load(skip)}>
+          Загрузить ещё
+        </button>
       )}
       {!loading && items.length === 0 && <div>Уведомлений нет</div>}
     </main>

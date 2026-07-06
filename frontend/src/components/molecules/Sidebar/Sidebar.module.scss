@@ -40,7 +40,7 @@
   border-radius: 8px;
 }
 
-.menuItem span {
+.menuLabel {
   font-size: 16px;
   opacity: 0;
   white-space: nowrap;
@@ -54,7 +54,7 @@
   color: var(--white);
 }
 
-.sidebar:hover .menuItem span {
+.sidebar:hover .menuLabel {
   opacity: 1;
   transform: translateX(0);
   transition-delay: 0.1s;
@@ -63,4 +63,24 @@
 .logoutItem {
   margin-bottom: 20px;
   margin-top: auto;
+}
+
+.badgeIcon {
+  display: flex;
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 5px;
+  background-color: var(--purple);
+  border-radius: 100%;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
