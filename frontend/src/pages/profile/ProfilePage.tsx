@@ -176,7 +176,15 @@ export const ProfilePage = () => {
       <div className={styles.profile}>
         <div className={styles.profileInfo}>
           {isOwn ? (
-            <UploadAvatar src={profile?.avatarUrl || ""} size={AVATAR_SIZE} />
+            <UploadAvatar
+              src={profile.avatarUrl || ""}
+              size={AVATAR_SIZE}
+              onAvatarChange={(avatarUrl) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, avatarUrl } : prev,
+                )
+              }
+            />
           ) : (
             <Avatar
               src={profile?.avatarUrl || ""}

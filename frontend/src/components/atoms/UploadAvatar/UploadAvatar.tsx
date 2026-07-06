@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type FC } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FC } from "react";
 import type { IUploadAvatar } from "./types";
 import { Avatar, Button, ButtonBase, CircularProgress } from "@mui/material";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -9,11 +9,16 @@ import { useAuth } from "../../../auth/AuthContext";
 import { delay } from "../../../utils/delay";
 import { Modal } from "../Modal";
 
-export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
+export const UploadAvatar: FC<IUploadAvatar> = ({
+  src,
+  size,
+  onAvatarChange,
+}) => {
   const { user, reloadUser } = useAuth();
+  const [displaySrc, setDisplaySrc] = useState<string>(src);
   const [loading, setLoading] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenModal = () => {
@@ -33,7 +38,9 @@ export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
     setIsModalOpen(false);
     await delay(500);
     try {
-      await usersApi.uploadAvatar(file);
+      const { avatarUrl } = await usersApi.uploadAvatar(file);
+      setDisplaySrc(avatarUrl);
+      onAvatarChange?.(avatarUrl);
       await reloadUser();
       toastSuccess("Аватар обновлен");
     } catch (err) {
@@ -50,6 +57,8 @@ export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
     await delay(500);
     try {
       await usersApi.deleteAvatar();
+      setDisplaySrc("");
+      onAvatarChange?.("");
       await reloadUser();
       toastSuccess("Фото профиля удалено");
     } catch (err) {
@@ -58,6 +67,10 @@ export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setDisplaySrc(src);
+  }, [src]);
 
   return (
     <>
@@ -78,7 +91,7 @@ export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
       >
         <Avatar
           alt="Upload new avatar"
-          src={src}
+          src={displaySrc}
           sx={{
             width: size,
             height: size,
@@ -86,7 +99,7 @@ export const UploadAvatar: FC<IUploadAvatar> = ({ src, size }) => {
             transition: "0.2s",
           }}
         />
-        {!src && !loading && (
+        {!displaySrc && !loading && (
           <div className={styles.avatarIcon}>
             <CameraAltIcon sx={{ fontSize: "40px" }} />
           </div>

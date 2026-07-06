@@ -259,7 +259,7 @@ export const SettingsPage = () => {
                 slotProps={{
                   input: { "aria-label": "controlled" },
                 }}
-                sx={{ padding: "0 9px" }}
+                sx={{ margin: "-9px 0" }}
               />
             }
             sx={{ marginTop: "-20px" }}
