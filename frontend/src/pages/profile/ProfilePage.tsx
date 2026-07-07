@@ -14,7 +14,7 @@ import * as frApi from "../../api/followRequests";
 import { ApiError } from "../../api/client";
 import { useAuth } from "../../store/useAuthStore";
 import { useProfile } from "../../store/useProfileStore";
-import { usePosts } from "../../store/usePostsStore";
+import { usePostsStore } from "../../store/usePostsStore";
 import type { IPost } from "../../types/post";
 import { PostList } from "../../components/organisms/PostList";
 import { toastError } from "../../lib/toast";
@@ -48,7 +48,6 @@ export const ProfilePage = () => {
     updateProfile,
     adjustFollowers,
   } = useProfile();
-  const { syncPosts } = usePosts();
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
 
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -57,6 +56,7 @@ export const ProfilePage = () => {
   const [postsLoading, setPostsLoading] = useState<boolean>(true);
   const [privateBlocked, setPrivateBlocked] = useState<boolean>(false);
   const postsLoadingRef = useRef(false);
+  const canViewPostsRef = useRef<boolean | undefined>(undefined);
 
   const followersLinkProps = {
     to: profileFollowersPath(id),
@@ -81,7 +81,7 @@ export const ProfilePage = () => {
         setPosts((prev) =>
           currentSkip === 0 ? data.posts : [...prev, ...data.posts],
         );
-        syncPosts(data.posts);
+        usePostsStore.getState().syncPosts(data.posts);
         setHasMore(data.hasMore);
         setSkip(currentSkip + data.posts.length);
         setPrivateBlocked(false);
@@ -98,8 +98,17 @@ export const ProfilePage = () => {
         setPostsLoading(false);
       }
     },
-    [id, syncPosts],
+    [id],
   );
+
+  const reloadPosts = useCallback(() => {
+    setPosts([]);
+    setSkip(0);
+    setHasMore(false);
+    setPrivateBlocked(false);
+    setPostsLoading(true);
+    loadPosts(0);
+  }, [loadPosts]);
 
   const reloadStatus = async () => {
     setStatus(await socialApi.getStatus(id));
@@ -137,41 +146,82 @@ export const ProfilePage = () => {
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     setProfileLoading(true);
     setProfile(null);
     setStatus(null);
 
-    const loadProfile = async () => {
+    const init = async () => {
       try {
-        const data = await usersApi.getUser(id);
+        const profilePromise = usersApi.getUser(id);
+        const statusPromise = isOwn ? null : socialApi.getStatus(id);
+
+        const data = await profilePromise;
+        if (cancelled) return;
         setProfile(data);
+
+        if (statusPromise) {
+          try {
+            const socialStatus = await statusPromise;
+            if (!cancelled) {
+              setStatus(socialStatus);
+            }
+          } catch (err) {
+            if (!cancelled) {
+              toastError(err, "Не удалось загрузить статус подписки");
+            }
+          }
+        }
       } catch (err) {
-        toastError(err, "Не удалось загрузить профиль");
+        if (!cancelled) {
+          toastError(err, "Не удалось загрузить профиль");
+        }
       } finally {
-        setProfileLoading(false);
+        if (!cancelled) {
+          setProfileLoading(false);
+        }
       }
     };
 
-    loadProfile();
+    init();
 
-    if (!isOwn) {
-      socialApi
-        .getStatus(id)
-        .then(setStatus)
-        .catch((err) => {
-          toastError(err, "Не удалось загрузить статус подписки");
-        });
-    }
-  }, [id, isOwn]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isOwn, setProfile, setStatus]);
 
   useEffect(() => {
+    canViewPostsRef.current = undefined;
     setPosts([]);
     setSkip(0);
     setHasMore(false);
     setPrivateBlocked(false);
-    setPostsLoading(true);
-    loadPosts(0);
-  }, [loadPosts, status?.isFollowing]);
+
+    if (isOwn) {
+      setPostsLoading(true);
+      loadPosts(0);
+    }
+  }, [id, isOwn, loadPosts]);
+
+  useEffect(() => {
+    if (isOwn || !status || !profile) return;
+
+    const canViewPosts = !profile.isPrivate || status.isFollowing;
+    const prev = canViewPostsRef.current;
+
+    if (prev === undefined) {
+      canViewPostsRef.current = canViewPosts;
+      setPostsLoading(true);
+      loadPosts(0);
+      return;
+    }
+
+    if (prev !== canViewPosts) {
+      canViewPostsRef.current = canViewPosts;
+      reloadPosts();
+    }
+  }, [status, profile, isOwn, loadPosts, reloadPosts]);
 
   if (profileLoading) {
     return <SupportContent isLoading={true} />;
