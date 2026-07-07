@@ -12,10 +12,10 @@ import * as socialApi from "../../api/social";
 import * as followsApi from "../../api/follows";
 import * as frApi from "../../api/followRequests";
 import { ApiError } from "../../api/client";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../store/useAuthStore";
+import { useProfile } from "../../store/useProfileStore";
+import { usePosts } from "../../store/usePostsStore";
 import type { IPost } from "../../types/post";
-import type { IPublicUser } from "../../types/user";
-import type { ISocialStatus } from "../../types/social";
 import { PostList } from "../../components/organisms/PostList";
 import { toastError } from "../../lib/toast";
 import styles from "./ProfilePage.module.scss";
@@ -40,9 +40,16 @@ export const ProfilePage = () => {
   const location = useLocation();
   const isOwn = user?.userId === id;
 
-  const [profile, setProfile] = useState<IPublicUser | null>(null);
+  const {
+    profile,
+    status,
+    setProfile,
+    setStatus,
+    updateProfile,
+    adjustFollowers,
+  } = useProfile();
+  const { syncPosts } = usePosts();
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
-  const [status, setStatus] = useState<ISocialStatus | null>(null);
 
   const [posts, setPosts] = useState<IPost[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(false);
@@ -74,6 +81,7 @@ export const ProfilePage = () => {
         setPosts((prev) =>
           currentSkip === 0 ? data.posts : [...prev, ...data.posts],
         );
+        syncPosts(data.posts);
         setHasMore(data.hasMore);
         setSkip(currentSkip + data.posts.length);
         setPrivateBlocked(false);
@@ -90,7 +98,7 @@ export const ProfilePage = () => {
         setPostsLoading(false);
       }
     },
-    [id],
+    [id, syncPosts],
   );
 
   const reloadStatus = async () => {
@@ -99,7 +107,10 @@ export const ProfilePage = () => {
 
   const handleFollow = async () => {
     try {
-      await followsApi.follow(id);
+      const { pending } = await followsApi.follow(id);
+      if (!pending) {
+        adjustFollowers(1);
+      }
       await reloadStatus();
     } catch (err) {
       toastError(err, "Не удалось подписаться");
@@ -109,6 +120,7 @@ export const ProfilePage = () => {
   const handleUnfollow = async () => {
     try {
       await followsApi.unfollow(id);
+      adjustFollowers(-1);
       await reloadStatus();
     } catch (err) {
       toastError(err, "Не удалось отписаться");
@@ -179,11 +191,7 @@ export const ProfilePage = () => {
             <UploadAvatar
               src={profile.avatarUrl || ""}
               size={AVATAR_SIZE}
-              onAvatarChange={(avatarUrl) =>
-                setProfile((prev) =>
-                  prev ? { ...prev, avatarUrl } : prev,
-                )
-              }
+              onAvatarChange={(avatarUrl) => updateProfile({ avatarUrl })}
             />
           ) : (
             <Avatar

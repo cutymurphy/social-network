@@ -6,7 +6,8 @@ import { getBackgroundLocation, profilePath } from "../../../router";
 import type { IFollowListModal } from "./types";
 import type { IUserPreview } from "../../../types/user";
 import * as followsApi from "../../../api/follows";
-import { useAuth } from "../../../auth/AuthContext";
+import { useAuth } from "../../../store/useAuthStore";
+import { useProfileStore } from "../../../store/useProfileStore";
 import { toastError } from "../../../lib/toast";
 import styles from "./FollowListModal.module.scss";
 import CloseIcon from "@mui/icons-material/Close";
@@ -82,6 +83,7 @@ export const FollowListModal: FC<IFollowListModal> = ({ mode }) => {
     try {
       await followsApi.unfollow(userId);
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+      useProfileStore.getState().adjustFollowing(-1);
     } catch (err) {
       toastError(err, "Не удалось отписаться");
     } finally {
@@ -94,6 +96,7 @@ export const FollowListModal: FC<IFollowListModal> = ({ mode }) => {
     try {
       await followsApi.removeFollower(userId);
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+      useProfileStore.getState().adjustFollowers(-1);
     } catch (err) {
       toastError(err, "Не удалось удалить подписчика");
     } finally {
