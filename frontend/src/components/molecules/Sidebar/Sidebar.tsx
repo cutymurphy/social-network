@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../store/useAuthStore";
 import { useNotifications } from "../../../store/useNotificationsStore";
+import { useFollowRequests } from "../../../store/useFollowRequestsStore";
 import styles from "./Sidebar.module.scss";
 import { ERoutes, profilePath } from "../../../router";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -22,14 +23,16 @@ export const Sidebar = () => {
     loadUnreadCount,
     reset: resetUnreadCount,
   } = useNotifications();
+  const { hasIncoming, loadIncomingCount } = useFollowRequests();
 
   useEffect(() => {
     if (location.pathname === ERoutes.notifications) {
       resetUnreadCount();
-      return;
+    } else {
+      loadUnreadCount();
     }
 
-    loadUnreadCount();
+    loadIncomingCount();
   }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -85,7 +88,12 @@ export const Sidebar = () => {
     {
       label: "Заявки",
       path: ERoutes.requests,
-      icon: <MoveToInboxRoundedIcon />,
+      icon: (
+        <div className={styles.badgeIcon}>
+          <MoveToInboxRoundedIcon />
+          {hasIncoming && <span className={styles.dot} />}
+        </div>
+      ),
     },
   ];
 

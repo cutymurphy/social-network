@@ -6,6 +6,11 @@ import { ApiQuery } from '@nestjs/swagger';
 export class FollowRequestsController {
   constructor(private readonly followRequestsService: FollowRequestsService) {}
 
+  @Get('incoming-count')
+  countIncoming(@Req() req: any) {
+    return this.followRequestsService.countIncoming(req.user.userId);
+  }
+
   @Get('incoming')
   @ApiQuery({ name: 'skip', required: false, type: Number, example: 0 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })

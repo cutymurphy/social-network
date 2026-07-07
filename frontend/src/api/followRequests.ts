@@ -5,6 +5,10 @@ import type {
   ISuccessResponse,
 } from '../types/api';
 
+export const getIncomingCount = () => {
+  return apiFetch<number>('/follow-requests/incoming-count');
+};
+
 export const getIncoming = (skip = 0, limit = 20) => {
   const params = new URLSearchParams({
     skip: String(skip),

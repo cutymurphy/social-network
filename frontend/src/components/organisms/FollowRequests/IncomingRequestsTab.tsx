@@ -7,6 +7,7 @@ import * as frApi from "../../../api/followRequests";
 import type { IFollowRequestIncoming } from "../../../types/follow";
 import type { IUserPreview } from "../../../types/user";
 import { toastError } from "../../../lib/toast";
+import { useFollowRequestsStore } from "../../../store/useFollowRequestsStore";
 import { delay } from "../../../utils/delay";
 import { UserList } from "../UserList";
 import styles from "./FollowRequests.module.scss";
@@ -75,6 +76,7 @@ export const IncomingRequestsTab: FC = () => {
       await frApi.acceptRequest(req._id);
       setUsers((prevUser) => prevUser.filter((user) => user._id !== userId));
       setRequests((prev) => prev.filter((item) => item._id !== req._id));
+      useFollowRequestsStore.getState().loadIncomingCount();
     } catch (err) {
       toastError(err, "Не удалось принять заявку");
     } finally {
@@ -90,6 +92,7 @@ export const IncomingRequestsTab: FC = () => {
       await frApi.rejectRequest(userId);
       setUsers((prevUser) => prevUser.filter((user) => user._id !== userId));
       setRequests((prev) => prev.filter((item) => item._id !== req._id));
+      useFollowRequestsStore.getState().loadIncomingCount();
     } catch (err) {
       toastError(err, "Не удалось отклонить заявку");
     } finally {

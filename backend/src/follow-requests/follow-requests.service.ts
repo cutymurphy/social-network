@@ -52,6 +52,12 @@ export class FollowRequestsService {
     }
   }
 
+  async countIncoming(userId: string) {
+    return this.followRequestModel.countDocuments({
+      targetId: new Types.ObjectId(userId),
+    });
+  }
+
   async getIncomingRequests(userId: string, skip = 0, limit = 20) {
     limit = Math.min(Math.max(limit, 1), 50);
     const incomingRequests = await this.followRequestModel
