@@ -1,0 +1,63 @@
+.itemLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.item {
+  width: 100%;
+  cursor: pointer;
+  transition: 0.2s;
+  position: relative;
+}
+
+.item:hover {
+  .mediaWrapper {
+    filter: brightness(0.3);
+  }
+
+  .postStatistics {
+    opacity: 1;
+  }
+}
+
+.mediaWrapper {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  width: 100%;
+  background: #000;
+}
+
+.videoMain,
+.mediaMain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.postStatistics {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  opacity: 0;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.statistic {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

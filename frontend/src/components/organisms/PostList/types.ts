@@ -5,6 +5,4 @@ export interface IPostList {
   hasMore: boolean;
   loading: boolean;
   onLoadMore: () => void;
-  onToggleLike: (post: IPost) => void;
-  onDelete?: (post: IPost) => void;
 }

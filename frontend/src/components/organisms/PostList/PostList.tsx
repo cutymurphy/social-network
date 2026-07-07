@@ -9,8 +9,6 @@ export const PostList = ({
   hasMore,
   loading,
   onLoadMore,
-  onToggleLike,
-  onDelete,
 }: IPostList) => {
   if (loading && posts.length === 0) {
     return (
@@ -38,12 +36,7 @@ export const PostList = ({
     >
       <div className={styles.posts}>
         {posts.map((post) => (
-          <PostItem
-            key={post._id}
-            post={post}
-            onToggleLike={onToggleLike}
-            onDelete={onDelete}
-          />
+          <PostItem key={post._id} post={post} />
         ))}
       </div>
     </InfiniteScroll>
