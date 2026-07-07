@@ -3,11 +3,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { Avatar, CircularProgress, IconButton, TextField } from "@mui/material";
-import { useInfiniteScroll } from "react-infinite-scroll-component";
 import { SupportContent } from "../../atoms/SupportContent";
 import { profilePath } from "../../../router";
 import styles from "./PostDetailPanel.module.scss";
-import type { FC, SyntheticEvent } from "react";
+import type { FC, SyntheticEvent, UIEvent } from "react";
+import { useCallback, useEffect } from "react";
 import { formatPostDate } from "../../../utils/formatPostDate";
 import { Comment } from "../../molecules/Comment";
 import { usePostLike } from "../../../store/usePostsStore";
@@ -31,13 +31,33 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
   onClose,
   userId,
 }) => {
-  const { sentinelRef } = useInfiniteScroll({
-    next: () => loadComments(commentsSkip),
-    hasMore: hasMoreComments,
-    dataLength: comments.length,
-    scrollableTarget: COMMENTS_SCROLL_ID,
-    scrollThreshold: 0.9,
-  });
+  const handleCommentsScroll = useCallback(
+    (e: UIEvent<HTMLDivElement>) => {
+      if (!hasMoreComments || commentsLoading) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+      if (scrollHeight - scrollTop - clientHeight > 80) return;
+
+      loadComments(commentsSkip);
+    },
+    [hasMoreComments, commentsLoading, commentsSkip, loadComments],
+  );
+
+  useEffect(() => {
+    if (postLoading || !hasMoreComments || commentsLoading) return;
+
+    const el = document.getElementById(COMMENTS_SCROLL_ID);
+    if (!el || el.scrollHeight > el.clientHeight) return;
+
+    loadComments(commentsSkip);
+  }, [
+    postLoading,
+    hasMoreComments,
+    commentsLoading,
+    comments.length,
+    commentsSkip,
+    loadComments,
+  ]);
 
   const likeOverlay = usePostLike(post?._id ?? "");
   const isLiked = likeOverlay?.isLiked ?? post?.isLiked;
@@ -55,6 +75,8 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
   if (!post) {
     return <SupportContent type="error" message="Пост не найден" />;
   }
+
+  const postDate = formatPostDate(post.createdAt);
 
   return (
     <div className={styles.wrapper} onClick={(e) => e.stopPropagation()}>
@@ -100,7 +122,11 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
           </Link>
         </div>
         <div className={styles.body}>
-          <div id={COMMENTS_SCROLL_ID} className={styles.comments}>
+          <div
+            id={COMMENTS_SCROLL_ID}
+            className={styles.comments}
+            onScroll={handleCommentsScroll}
+          >
             <div className={styles.commentsList}>
               {post.caption && (
                 <Comment
@@ -135,13 +161,6 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
                   sx={{ alignSelf: "center", margin: "8px 0" }}
                 />
               )}
-              {hasMoreComments && (
-                <div
-                  ref={sentinelRef}
-                  aria-hidden
-                  className={styles.sentinel}
-                />
-              )}
             </div>
           </div>
           <div className={styles.postMeta}>
@@ -164,7 +183,7 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
               </div>
             </div>
             <div className={styles.postDate}>
-              {formatPostDate(post.createdAt)} назад
+              {postDate} {postDate !== "только что" && "назад"}
             </div>
           </div>
         </div>
