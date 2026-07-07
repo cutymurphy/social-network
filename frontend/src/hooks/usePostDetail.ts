@@ -97,9 +97,7 @@ export const usePostDetail = (postId: string) => {
       setCommentText("");
       setCommentsSkip(0);
       await loadComments(0);
-      setPost((prev) =>
-        prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : prev,
-      );
+      usePostsStore.getState().adjustCommentsCount(postId, 1);
     } catch (err) {
       toastError(err, "Не удалось отправить комментарий");
     }
@@ -109,11 +107,7 @@ export const usePostDetail = (postId: string) => {
     try {
       await commentsApi.deleteComment(commentId);
       setComments((prev) => prev.filter((c) => c._id !== commentId));
-      setPost((prev) =>
-        prev
-          ? { ...prev, commentsCount: Math.max(0, prev.commentsCount - 1) }
-          : prev,
-      );
+      usePostsStore.getState().adjustCommentsCount(postId, -1);
     } catch (err) {
       toastError(err, "Не удалось удалить комментарий");
     }

@@ -6,13 +6,17 @@ import styles from "./PostItem.module.scss";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ModeCommentIcon from "@mui/icons-material/ModeComment";
 import { Typography } from "@mui/material";
-import { usePostLike } from "../../../store/usePostsStore";
+import {
+  usePostLike,
+  usePostCommentsCount,
+} from "../../../store/usePostsStore";
 
 export const PostItem: FC<IPostItem> = ({ post }) => {
   const location = useLocation();
 
   const likeOverlay = usePostLike(post._id);
   const likesCount = likeOverlay?.likesCount ?? post.likesCount;
+  const commentsCount = usePostCommentsCount(post._id) ?? post.commentsCount;
 
   const postLinkProps = {
     to: postPath(post._id),
@@ -52,9 +56,7 @@ export const PostItem: FC<IPostItem> = ({ post }) => {
           </div>
           <div className={styles.statistic}>
             <ModeCommentIcon />
-            <Typography sx={{ fontWeight: 600 }}>
-              {post.commentsCount}
-            </Typography>
+            <Typography sx={{ fontWeight: 600 }}>{commentsCount}</Typography>
           </div>
         </div>
       </div>

@@ -8,7 +8,10 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { createModalState, postPath, profilePath } from "../../../router";
 import { formatPostDate } from "../../../utils/formatPostDate";
-import { usePostLike } from "../../../store/usePostsStore";
+import {
+  usePostLike,
+  usePostCommentsCount,
+} from "../../../store/usePostsStore";
 import styles from "./FeedPostItem.module.scss";
 import type { IFeedPostItem } from "./types";
 
@@ -21,6 +24,7 @@ export const FeedPostItem: FC<IFeedPostItem> = ({ post, onToggleLike }) => {
   const likeOverlay = usePostLike(post._id);
   const isLiked = likeOverlay?.isLiked ?? post.isLiked;
   const likesCount = likeOverlay?.likesCount ?? post.likesCount;
+  const commentsCount = usePostCommentsCount(post._id) ?? post.commentsCount;
 
   const postLinkProps = {
     to: postPath(post._id),
@@ -125,7 +129,7 @@ export const FeedPostItem: FC<IFeedPostItem> = ({ post, onToggleLike }) => {
           aria-label="Комментарии"
         >
           <ModeCommentIcon />
-          {post.commentsCount > 0 && <span>{post.commentsCount}</span>}
+          {commentsCount > 0 && <span>{commentsCount}</span>}
         </Link>
       </div>
       {post.caption && (

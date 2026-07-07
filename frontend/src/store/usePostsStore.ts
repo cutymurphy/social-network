@@ -10,23 +10,42 @@ interface IPostLikeState {
 
 interface IPostsStore {
   likes: Record<string, IPostLikeState>;
+  commentsCount: Record<string, number>;
   syncPosts: (posts: IPost[]) => void;
   toggleLike: (post: IPost) => Promise<void>;
+  adjustCommentsCount: (postId: string, delta: number) => void;
 }
 
 export const usePostsStore = create<IPostsStore>((set, get) => ({
   likes: {},
+  commentsCount: {},
 
   syncPosts: (posts) =>
     set((state) => {
-      const next = { ...state.likes };
+      const nextLikes = { ...state.likes };
+      const nextCommentsCount = { ...state.commentsCount };
+
       for (const post of posts) {
-        next[post._id] = {
+        nextLikes[post._id] = {
           likesCount: post.likesCount,
           isLiked: !!post.isLiked,
         };
+        nextCommentsCount[post._id] = post.commentsCount;
       }
-      return { likes: next };
+
+      return { likes: nextLikes, commentsCount: nextCommentsCount };
+    }),
+
+  adjustCommentsCount: (postId, delta) =>
+    set((state) => {
+      const current = state.commentsCount[postId] ?? 0;
+
+      return {
+        commentsCount: {
+          ...state.commentsCount,
+          [postId]: Math.max(0, current + delta),
+        },
+      };
     }),
 
   toggleLike: async (post) => {
@@ -63,3 +82,6 @@ export const usePosts = () => usePostsStore();
 
 export const usePostLike = (postId: string) =>
   usePostsStore((state) => state.likes[postId]);
+
+export const usePostCommentsCount = (postId: string) =>
+  usePostsStore((state) => state.commentsCount[postId]);
