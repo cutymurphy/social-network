@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ModalOverlay } from "../../atoms/ModalOverlay";
 import { PostDetailPanel } from "../PostDetail";
 import { usePostDetail } from "../../../hooks/usePostDetail";
-import { useAuth } from "../../../auth/AuthContext";
+import { useAuth } from "../../../store/useAuthStore";
 import { getBackgroundLocation } from "../../../router";
 
 const modalRoot = document.getElementById("modals-root") as HTMLElement;

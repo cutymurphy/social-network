@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../store/useAuthStore";
 import { ERoutes } from "../../router/routes";
 import { SupportContent } from "../atoms/SupportContent";
 

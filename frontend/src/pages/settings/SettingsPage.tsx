@@ -1,7 +1,7 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import * as usersApi from "../../api/users";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../store/useAuthStore";
 import {
   initialUpdatePassword,
   initialUpdateUser,

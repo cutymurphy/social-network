@@ -5,7 +5,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import styles from "./UploadAvatar.module.scss";
 import * as usersApi from "../../../api/users";
 import { toastError, toastSuccess } from "../../../lib/toast";
-import { useAuth } from "../../../auth/AuthContext";
+import { useAuth } from "../../../store/useAuthStore";
 import { delay } from "../../../utils/delay";
 import { Modal } from "../Modal";
 

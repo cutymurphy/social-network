@@ -1,6 +1,6 @@
 import { useState, type SyntheticEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../store/useAuthStore";
 import { ERoutes } from "../../router";
 import { toastError } from "../../lib/toast";
 import styles from "./AuthPage.module.scss";

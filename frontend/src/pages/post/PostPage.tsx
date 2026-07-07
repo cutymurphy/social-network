@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { PostDetailPanel } from "../../components/organisms/PostDetail";
 import { usePostDetail } from "../../hooks/usePostDetail";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../store/useAuthStore";
 import styles from "./PostPage.module.scss";
 
 export const PostPage = () => {
