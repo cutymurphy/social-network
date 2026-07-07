@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as postsApi from "../api/posts";
 import * as commentsApi from "../api/comments";
-import * as likesApi from "../api/likes";
 import type { IComment } from "../types/comment";
 import type { IPost } from "../types/post";
 import { toastError } from "../lib/toast";
+import { usePostsStore } from "../store/usePostsStore";
 
 const COMMENTS_LIMIT = 20;
 
@@ -29,6 +29,7 @@ export const usePostDetail = (postId: string) => {
         const data = await postsApi.getPost(postId);
         if (!cancelled) {
           setPost(data);
+          usePostsStore.getState().syncPosts([data]);
         }
       } catch (err) {
         if (!cancelled) {
@@ -85,24 +86,7 @@ export const usePostDetail = (postId: string) => {
 
   const toggleLike = async () => {
     if (!post) return;
-
-    const snapshot = post;
-    setPost({
-      ...post,
-      isLiked: !post.isLiked,
-      likesCount: post.likesCount + (post.isLiked ? -1 : 1),
-    });
-
-    try {
-      if (snapshot.isLiked) {
-        await likesApi.unlikePost(post._id);
-      } else {
-        await likesApi.likePost(post._id);
-      }
-    } catch (err) {
-      setPost(snapshot);
-      toastError(err, "Не удалось обновить лайк");
-    }
+    await usePostsStore.getState().toggleLike(post);
   };
 
   const addComment = async () => {

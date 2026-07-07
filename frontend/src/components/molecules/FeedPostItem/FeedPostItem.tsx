@@ -8,6 +8,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { createModalState, postPath, profilePath } from "../../../router";
 import { formatPostDate } from "../../../utils/formatPostDate";
+import { usePostLike } from "../../../store/usePostsStore";
 import styles from "./FeedPostItem.module.scss";
 import type { IFeedPostItem } from "./types";
 
@@ -16,6 +17,10 @@ export const FeedPostItem: FC<IFeedPostItem> = ({ post, onToggleLike }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState<boolean>(true);
   const [playing, setPlaying] = useState<boolean>(true);
+
+  const likeOverlay = usePostLike(post._id);
+  const isLiked = likeOverlay?.isLiked ?? post.isLiked;
+  const likesCount = likeOverlay?.likesCount ?? post.likesCount;
 
   const postLinkProps = {
     to: postPath(post._id),
@@ -107,12 +112,12 @@ export const FeedPostItem: FC<IFeedPostItem> = ({ post, onToggleLike }) => {
           onClick={() => onToggleLike(post)}
           aria-label="Лайк"
         >
-          {post.isLiked ? (
+          {isLiked ? (
             <FavoriteIcon className={styles.liked} />
           ) : (
             <FavoriteBorderIcon />
           )}
-          {post.likesCount > 0 && <span>{post.likesCount}</span>}
+          {likesCount > 0 && <span>{likesCount}</span>}
         </button>
         <Link
           {...postLinkProps}

@@ -10,6 +10,7 @@ import styles from "./PostDetailPanel.module.scss";
 import type { FC, SyntheticEvent } from "react";
 import { formatPostDate } from "../../../utils/formatPostDate";
 import { Comment } from "../../molecules/Comment";
+import { usePostLike } from "../../../store/usePostsStore";
 import type { IPostDetailPanel } from "./types";
 
 const COMMENTS_SCROLL_ID = "post-comments-scroll";
@@ -37,6 +38,10 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
     scrollableTarget: COMMENTS_SCROLL_ID,
     scrollThreshold: 0.9,
   });
+
+  const likeOverlay = usePostLike(post?._id ?? "");
+  const isLiked = likeOverlay?.isLiked ?? post?.isLiked;
+  const likesCount = likeOverlay?.likesCount ?? post?.likesCount ?? 0;
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
@@ -147,7 +152,7 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
                   aria-label="Лайк"
                   sx={{ padding: "8px" }}
                 >
-                  {post.isLiked ? (
+                  {isLiked ? (
                     <FavoriteIcon className={styles.likeActive} />
                   ) : (
                     <FavoriteBorderIcon sx={{ color: "var(--white)" }} />
@@ -155,7 +160,7 @@ export const PostDetailPanel: FC<IPostDetailPanel> = ({
                 </IconButton>
               </div>
               <div className={styles.likes}>
-                {post.likesCount} отметок «Нравится»
+                {likesCount} отметок «Нравится»
               </div>
             </div>
             <div className={styles.postDate}>
