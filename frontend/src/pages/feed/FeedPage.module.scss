@@ -2,9 +2,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 40px 0;
+  width: 100%;
+  padding-bottom: 40px;
+  padding-top: 20px;
 }
 
-.postsWrapper {
-  width: 80%;
+.feed {
+  width: 35%;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.loaderMore {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--grey);
+  line-height: 1.5;
 }

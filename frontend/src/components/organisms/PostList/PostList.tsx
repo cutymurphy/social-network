@@ -3,13 +3,14 @@ import type { IPostList } from "./types";
 import styles from "./PostList.module.scss";
 import { CircularProgress } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
+import type { FC } from "react";
 
-export const PostList = ({
+export const PostList: FC<IPostList> = ({
   posts,
   hasMore,
   loading,
   onLoadMore,
-}: IPostList) => {
+}) => {
   if (loading && posts.length === 0) {
     return (
       <div className={styles.loader}>

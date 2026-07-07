@@ -16,6 +16,7 @@
   --modal-bg: var(--dark-light);
   --modal-overlay: rgba(0, 0, 0, 0.65);
   --error: var(--red);
+  --border: rgba(236, 236, 236, 0.05);
 }
 
 #modals-root {
