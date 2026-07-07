@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../auth/AuthContext";
-import * as notificationsApi from "../../../api/notifications";
+import { useAuth } from "../../../store/useAuthStore";
+import { useNotifications } from "../../../store/useNotificationsStore";
 import styles from "./Sidebar.module.scss";
 import { ERoutes, profilePath } from "../../../router";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -17,20 +17,15 @@ export const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-
-  const loadUnreadCount = async () => {
-    try {
-      const count = await notificationsApi.getUnreadCount();
-      setUnreadCount(count);
-    } catch {
-      setUnreadCount(0);
-    }
-  };
+  const {
+    unreadCount,
+    loadUnreadCount,
+    reset: resetUnreadCount,
+  } = useNotifications();
 
   useEffect(() => {
     if (location.pathname === ERoutes.notifications) {
-      setUnreadCount(0);
+      resetUnreadCount();
       return;
     }
 

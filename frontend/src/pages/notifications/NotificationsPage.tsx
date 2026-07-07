@@ -4,6 +4,7 @@ import type { INotification } from "../../types/notification";
 import { toastError } from "../../lib/toast";
 import { delay } from "../../utils/delay";
 import { Notification } from "../../components/molecules/Notification";
+import { useNotificationsStore } from "../../store/useNotificationsStore";
 import styles from "./NotificationsPage.module.scss";
 import { CircularProgress } from "@mui/material";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -69,6 +70,7 @@ export const NotificationsPage = () => {
         setSkip(data.notifications.length);
 
         await notificationsApi.markAsSeen();
+        useNotificationsStore.getState().reset();
       } catch (err) {
         if (!cancelled) {
           toastError(err, "Не удалось загрузить уведомления");
